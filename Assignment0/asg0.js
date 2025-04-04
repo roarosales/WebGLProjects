@@ -104,8 +104,31 @@ function handleDrawEvent(){
     v4= v2.normalize();
     drawVector(v3,"green");
     drawVector(v4,"green");
-  }
+  }    
 
-    
+  //Part 7
+  //Angle Between
+  if(document.getElementById("operation-select").value == "Angle Between"){
+    console.log("Angle:" + angleBetween(v1,v2));
+  }    
+
+  //Part 8 
+  // Area of triangle
+  if(document.getElementById("operation-select").value == "Area"){
+    console.log("Area of Triangle:" + areaTriangle(v1,v2));
+  }
 }
 
+//Part 7
+//Angle Between Function
+function angleBetween(v1,v2){
+  let angle = Vector3.dot(v1,v2) / (v1.magnitude()*v2.magnitude()); // got formula from https://www.cuemath.com/geometry/angle-between-vectors/
+  return Math.acos(angle) * (180/Math.PI); // converting from radiants to degree, chatgpt helped here cause I forgot lol
+}
+
+//Part 8 
+//Area of Triangle Function
+function areaTriangle(v1,v2){
+  area =  Vector3.cross(v1,v2).magnitude() * (.5); //get the magnitude of cross product and then divide by 2 cause triangle area
+  return area;
+}

@@ -96,13 +96,15 @@ class Vector3 {
     };
 
     /**
-      * Calcualte the dop product between this vector and other.
+      * Calcualte the dot product between this vector and other.
       * @return scalar
       */
     static dot(other1, other2) {
         // Insert your code here.
         let d = 0; // Modify this line to calculate this vector's magnitude.
-
+        for(let i = 0; i<3;i++){ //Loop for magnitude of the vector
+          d += Math.abs(other1.elements[i]) * Math.abs(other2.elements[i]);
+        }
         // Don't delete the return statement.
         return d;
     }
@@ -115,7 +117,11 @@ class Vector3 {
         // Insert your code here.
         // This function should create and return a new vector.
         let v3 = new Vector3(); // Modify this line to calculate cross product between other1 and other2.
-
+        //I used this formula: https://mathweb.ucsd.edu/~lni/math20e/l2.pdf
+        //manually typing seemed easier than iterating lol
+        v3.elements[0] = other1.elements[1]*other2.elements[2] - other1.elements[2]*other2.elements[1];
+        v3.elements[1] = other1.elements[2]*other2.elements[0] - other1.elements[0]*other2.elements[2];
+        v3.elements[2] = other1.elements[0]*other2.elements[1] - other1.elements[1]*other2.elements[0];
         // Don't delete the return statement.
         return v3;
     }
