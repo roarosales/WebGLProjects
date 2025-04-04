@@ -45,15 +45,46 @@ function handleDrawEvent(){
   ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to black
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Setting canvas height and width
 
+  //Getting my elements from html
   let x1 = document.getElementById("v1x").value;
   let y1 = document.getElementById("v1y").value;
   let x2 = document.getElementById("v2x").value;
   let y2 = document.getElementById("v2y").value;
 
+  //Setting up original vectors
   let v1 = new Vector3([x1, y1, 0]);
   let v2 = new Vector3([x2, y2, 0]);
-
+ 
   drawVector(v1,"red");
   drawVector(v2,"blue");
+
+  //Addition
+  if(document.getElementById("operation-select").value == "Add"){
+    v3=v1.add(v2);
+    drawVector(v3,"green");
+  }
+
+  //Subtraction
+  if(document.getElementById("operation-select").value == "Subtract"){
+    v3=v1.sub(v2);
+    drawVector(v3,"green");
+  }
+
+  //Multiplication
+  if(document.getElementById("operation-select").value == "Multiply"){
+    v3=v1.mul(2);
+    v4=v2.mul(2);
+    drawVector(v3,"green");
+    drawVector(v4,"green");
+  }
+
+  //Division
+  if(document.getElementById("operation-select").value == "Divide"){
+    v3=v1.div(2);
+    v4=v2.div(2);
+    drawVector(v3,"green");
+    drawVector(v4,"green");
+  }
+    
 }
 
