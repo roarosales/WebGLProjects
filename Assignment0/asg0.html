@@ -10,6 +10,37 @@
       Please use a browser that supports "canvas"
     </canvas>
     <script src="asg0.js"></script>
-    <script src="cuon-matrix-cse160.js"></script>
+    <script src="lib/cuon-matrix-cse160.js"></script>
+
+    <br><br> <!--for v1-->
+    <label for="x">v1: x</label>
+    <input type="text" id="v1x" name="v1x" size="10" />
+    
+    <label for="y">y</label>
+    <input type="text" id="v1y" name="v1y" size="10" />
+
+    <br><br> <!--for v2-->
+    <label for="x">v2: x</label>
+    <input type="text" id="v2x" name="v2x" size="10" />
+    
+    <label for="y">y</label>
+    <input type="text" id="v2y" name="v2y" size="10" />
+  
+
+    <br><br>
+    <input type="button" value="Draw" onclick="handleDrawEvent()"></input>
+
+    <br><br>
+    <label for="pet-select">Operation:</label>
+
+    <select name="operator" id="operation-select">
+      <option value="Add">Add</option>
+      <option value="Subtract">Subtract</option>
+      <option value="Multiply">Multiply</option>
+      <option value="Divide">Divide</option>
+    </select>
+
+
+
   </body>
 </html>
