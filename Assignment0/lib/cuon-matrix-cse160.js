@@ -103,7 +103,7 @@ class Vector3 {
         // Insert your code here.
         let d = 0; // Modify this line to calculate this vector's magnitude.
         for(let i = 0; i<3;i++){ //Loop for magnitude of the vector
-          d += Math.abs(other1.elements[i]) * Math.abs(other2.elements[i]);
+          d += other1.elements[i]* other2.elements[i];
         }
         // Don't delete the return statement.
         return d;
@@ -134,7 +134,7 @@ class Vector3 {
         // Insert your code here.
         let m = 0; // Modify this line to calculate this vector's magnitude.
         for(let i = 0; i<3;i++){ //Loop for magnitude of the vector
-          m += (this.elements[i] * this.elements[i]); //adding the square
+          m += this.elements[i] * this.elements[i]; //getting the square :v
         }
         // Don't delete the return statement.
         m=Math.sqrt(m); //getting square root
@@ -148,8 +148,9 @@ class Vector3 {
     normalize() {
         // Insert your code here.
         // This function should change this vector (this.elements) and not create a new vector.
+        let m = this.magnitude() // get magnitude beforehand so it's constant
         for(let i = 0; i<3;i++){ //Loop for magnitude of the vector
-          this.elements[i] = this.elements[i] / this.magnitude(); //normalizing the vector
+          this.elements[i] /= m; //normalizing the vector w/ magnitude
         }
 
         // Don't delete the return statement.
