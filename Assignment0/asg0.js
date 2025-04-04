@@ -17,7 +17,7 @@ function main() {
   // Get the rendering context for 2DCG
   var ctx = canvas.getContext('2d');
 
-  // Draw a blue rectangle
+  // Part 1 & 2: Making a black square and red vector
   ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to black
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Setting canvas height and width
   
@@ -25,8 +25,10 @@ function main() {
   //drawVector(v1,"red");
 }
 
+//Part 2
 function drawVector(v1,color){
-  var canvas = document.getElementById('example');  
+  //setting up canvas and ctx
+  var canvas = document.getElementById('example'); 
   var ctx = canvas.getContext('2d'); 
 
   ctx.beginPath(); 
@@ -38,6 +40,7 @@ function drawVector(v1,color){
 }
 
 function handleDrawEvent(){
+  //setting up canvas and ctx
   var canvas = document.getElementById('example');  
   var ctx = canvas.getContext('2d'); 
 
@@ -45,6 +48,7 @@ function handleDrawEvent(){
   ctx.fillStyle = 'rgba(0, 0, 0, 1.0)'; // Set color to black
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Setting canvas height and width
 
+  //Part 3 and 4
   //Getting my elements from html
   let x1 = document.getElementById("v1x").value;
   let y1 = document.getElementById("v1y").value;
@@ -58,6 +62,7 @@ function handleDrawEvent(){
   drawVector(v1,"red");
   drawVector(v2,"blue");
 
+  //Part 5
   //Addition
   if(document.getElementById("operation-select").value == "Add"){
     v3=v1.add(v2);
@@ -72,19 +77,35 @@ function handleDrawEvent(){
 
   //Multiplication
   if(document.getElementById("operation-select").value == "Multiply"){
-    v3=v1.mul(2);
-    v4=v2.mul(2);
+    v3=v1.mul(document.getElementById("Scalar").value);
+    v4=v2.mul(document.getElementById("Scalar").value);
     drawVector(v3,"green");
     drawVector(v4,"green");
   }
 
   //Division
   if(document.getElementById("operation-select").value == "Divide"){
-    v3=v1.div(2);
-    v4=v2.div(2);
+    v3=v1.div(document.getElementById("Scalar").value);
+    v4=v2.div(document.getElementById("Scalar").value);
     drawVector(v3,"green");
     drawVector(v4,"green");
   }
+
+  //Part 6
+  //Magnitude
+  if(document.getElementById("operation-select").value == "Magnitude"){
+    console.log("Magnitude v1: " + v1.magnitude());
+    console.log("Magnitude v2: " + v2.magnitude());
+  }
+
+  //Normalize
+  if(document.getElementById("operation-select").value == "Normalize"){
+    v3= v1.normalize();
+    v4= v2.normalize();
+    drawVector(v3,"green");
+    drawVector(v4,"green");
+  }
+
     
 }
 
