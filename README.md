@@ -13,4 +13,4 @@ I used the following elements in my project:
 - https://mathweb.ucsd.edu/~lni/math20e/l2.pdf got a formula from here
 - https://developer.mozilla.org/en-US/docs/Web/HTML for documentation on HTML 
 - https://www.w3schools.com/tags/tag_input.asp for documentation on HTML
-- used chatgpt and vertex ai when stuck on some steps, any line where I used it should be cited
+- used chatgpt and vertex ai when stuck on some steps, any line where I used it should be cited.
