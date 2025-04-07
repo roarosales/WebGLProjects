@@ -49,7 +49,7 @@ function handleDrawEvent(){
   ctx.fillRect(0, 0, canvas.width, canvas.height); // Setting canvas height and width
 
   //Part 3 and 4
-  //Getting my elements from html
+  //Getting my elements from the html file
   let x1 = document.getElementById("v1x").value;
   let y1 = document.getElementById("v1y").value;
   let x2 = document.getElementById("v2x").value;

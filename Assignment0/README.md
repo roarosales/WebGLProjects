@@ -11,6 +11,6 @@ I really enjoyed doing this assignment and it worked as a really good refresher 
 I used the following elements in my project:
 - https://www.cuemath.com/geometry/angle-between-vectors/ got a formula from here
 - https://mathweb.ucsd.edu/~lni/math20e/l2.pdf got a formula from here
-- used chatgpt and vertex ai when stuck on a step, and any line where I used it should be cited
 - https://developer.mozilla.org/en-US/docs/Web/HTML for documentation on HTML 
 - https://www.w3schools.com/tags/tag_input.asp for documentation on HTML
+- used chatgpt and vertex ai when stuck on some steps, any line where I used it should be cited
