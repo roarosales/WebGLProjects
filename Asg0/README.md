@@ -2,7 +2,7 @@ This is my assignment 0 for my CSE160 class in which I extended the DrawRectangl
 
 I extended the matrix library provided by the textbook to support vector operations such as addition, subtraction, multiplication, cross product, dot product, etc. 
 
--Created objected oriented graphics projects in Javascript.
+-Created objected oriented graphics project in Javascript.
 -Drew to a <canvas> element using a 2D context.
 -Reviewed fundamental concepts of Linear Algebra.
 
