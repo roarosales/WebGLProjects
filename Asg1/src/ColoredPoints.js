@@ -66,10 +66,14 @@ function connectVariableToGLSL(){
     return;
   }
 }
+const POINT=0;
+const TRIANGLE=1;
+const CIRCLE=2;
 
 //Global variables for UI
 let g_selectedColor=[1.0,1.0,1.0,1.0]; //started as white by default
 let g_selectedSize=5;
+let g_selectedType=POINT;
 
 var g_shapesList = []; //new list for points
 
@@ -80,9 +84,15 @@ var g_shapesList = []; //new list for points
 
 //from video 
 function addActionsForHTMLUI(){
+  //buttons for colors
   document.getElementById('green').onclick = function() { g_selectedColor = [0.0,1.0,0.0,1.0]; };
   document.getElementById('red').onclick = function() { g_selectedColor = [1.0,0.0,0.0,1.0]; };
   document.getElementById('clearButton').onclick = function() { g_shapesList = []; renderAllShapes(); }; 
+
+  //buttons for shapes
+  document.getElementById('point').onclick = function() { g_selectedType = POINT; };
+  document.getElementById('triangle').onclick = function() { g_selectedType = TRIANGLE; };
+  document.getElementById('circle').onclick = function() { g_selectedType = CIRCLE; };
 
   //sliders for color
   document.getElementById('redSlide').addEventListener('mouseup', function(){ g_selectedColor[0] = this.value/100;});
@@ -133,7 +143,18 @@ function click(ev) {
   //Getting the WEBGL Coordinates
   let [x,y]=convertCoordinatesEventToGL(ev); //made it local
 
-  let point = new Point();
+  let point;
+  if(g_selectedType==POINT){
+    point = new Point();
+  }
+  else if(g_selectedType==TRIANGLE){
+    point = new Triangle();
+  }
+  else if(g_selectedType==CIRCLE){
+    point = new Circle();
+  }
+
+
   point.position=[x,y];
   point.color=g_selectedColor.slice();
   point.size=g_selectedSize;
