@@ -23,7 +23,11 @@ class Triangle{
   
       // Draw
       var d=this.size/200.0 //delta
-      drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0],xy[1]+d]);
+
+    // Draw the triangle
+    drawTriangle([xy[0] - d, xy[1], xy[0] + d, xy[1],  xy[0],     xy[1] + d*2]); // claudeai helped generate this line
+    
+    //drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0],xy[1]+d]);
     }
 }
 

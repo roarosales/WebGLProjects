@@ -93,14 +93,20 @@ function addActionsForHTMLUI(){
   document.getElementById('point').onclick = function() { g_selectedType = POINT; };
   document.getElementById('triangle').onclick = function() { g_selectedType = TRIANGLE; };
   document.getElementById('circle').onclick = function() { g_selectedType = CIRCLE; };
+  document.getElementById('eraser').onclick = function() { g_selectedColor = [0.0,0.0,0.0,1.0]; };
 
   //sliders for color
   document.getElementById('redSlide').addEventListener('mouseup', function(){ g_selectedColor[0] = this.value/100;});
   document.getElementById('greenSlide').addEventListener('mouseup', function(){ g_selectedColor[1] = this.value/100;});
   document.getElementById('blueSlide').addEventListener('mouseup', function(){ g_selectedColor[2] = this.value/100;});
 
+   //slider for transparency
+   document.getElementById('trSlide').addEventListener('mouseup', function(){ g_selectedColor[3] = this.value/100;});
+
   //slider for size
   document.getElementById('sizeSlide').addEventListener('mouseup', function(){ g_selectedSize = this.value;});
+
+ 
 }
 
 function convertCoordinatesEventToGL(ev){
@@ -183,6 +189,11 @@ function main() {
   setupWebGL();
   connectVariableToGLSL();
   addActionsForHTMLUI();
+
+
+  //There are two functions for transparency, chatgpt helped here
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // Register function (event handler) to be called on a mouse press
   canvas.onmousedown = click; //simplified to just click
