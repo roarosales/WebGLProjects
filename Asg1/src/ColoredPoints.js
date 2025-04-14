@@ -70,10 +70,18 @@ const POINT=0;
 const TRIANGLE=1;
 const CIRCLE=2;
 
+const EQUAL=0;
+const RIGHT=1;
+const LEFT=2;
+const ISOCELES=3;
+
 //Global variables for UI
 let g_selectedColor=[1.0,1.0,1.0,1.0]; //started as white by default
 let g_selectedSize=5;
 let g_selectedType=POINT;
+let g_selectedSeg=10;
+
+let g_selectedVarient=RIGHT;
 
 var g_shapesList = []; //new list for points
 
@@ -106,7 +114,14 @@ function addActionsForHTMLUI(){
   //slider for size
   document.getElementById('sizeSlide').addEventListener('mouseup', function(){ g_selectedSize = this.value;});
 
- 
+  //segment slide
+  document.getElementById('segSlide').addEventListener('mouseup', function(){ g_selectedSeg = this.value;});
+
+  //triangle varient
+  document.getElementById('iTri').onclick = function() { g_selectedVarient = ISOCELES; };
+  document.getElementById('rTri').onclick = function() { g_selectedVarient = RIGHT; };
+  document.getElementById('lTri').onclick = function() { g_selectedVarient = LEFT; };
+  document.getElementById('eTri').onclick = function() { g_selectedVarient = EQUAL; };
 }
 
 function convertCoordinatesEventToGL(ev){
@@ -145,22 +160,21 @@ function sendTextToHTML(text,htmlID){
 }
 
 function click(ev) {
-
   //Getting the WEBGL Coordinates
   let [x,y]=convertCoordinatesEventToGL(ev); //made it local
+  var segments= g_selectedSeg; //using the selected segments
+  var varient = g_selectedVarient;
 
   let point;
   if(g_selectedType==POINT){
     point = new Point();
   }
   else if(g_selectedType==TRIANGLE){
-    point = new Triangle();
+    point = new Triangle(varient);
   }
   else if(g_selectedType==CIRCLE){
-    point = new Circle();
+    point = new Circle(segments);
   }
-
-
   point.position=[x,y];
   point.color=g_selectedColor.slice();
   point.size=g_selectedSize;

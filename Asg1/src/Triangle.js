@@ -1,9 +1,10 @@
 class Triangle{
-    constructor(){
+    constructor(varient){
       this.type='triangle';
       this.position=[0.0,0.0,0.0];
       this.color=[1.0,1.0,1.0,1.0];
       this.size=5.0;
+      this.varient=varient;
     }
     render(){
       //var xy = g_shapesList[i].position;
@@ -25,9 +26,25 @@ class Triangle{
       var d=this.size/200.0 //delta
 
     // Draw the triangle
-    drawTriangle([xy[0] - d, xy[1], xy[0] + d, xy[1],  xy[0],     xy[1] + d*2]); // claudeai helped generate this line
+
+    //equal triangle
+    if(this.varient == 0){
+      let height = Math.sqrt(3) * d; // chatgpt helped with this line
+      drawTriangle([xy[0] - d, xy[1], xy[0] + d, xy[1], xy[0], xy[1] + height]);//chatgpt helped here
+    }
+    //right triangle
+    else if (this.varient == 1){
+      drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0],xy[1]+d]);
+    }
+    //left triangle
+    else if(this.varient==2){
+      drawTriangle([xy[0], xy[1], xy[0]-d, xy[1], xy[0],xy[1]+d]);
+    }
+    //isoceles triangle
+    else if (this.varient === 3) {
+      drawTriangle([xy[0] - d, xy[1], xy[0] + d, xy[1],  xy[0],     xy[1] + d*2]); // claudeai helped generate this line
+    }
     
-    //drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0],xy[1]+d]);
     }
 }
 

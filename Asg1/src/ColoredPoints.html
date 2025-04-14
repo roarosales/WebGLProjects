@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Change a point color</title>
+    <title>Create a drawing!</title>
   </head>
 
   <body onload="main()">
@@ -23,16 +23,20 @@
     <button type="button" id="circle" >Circle</button>
 
     <p></p>
-    Red <input type="range" min="0" max="100" value="100" class="slider" id="redSlide">
+    Red: <input type="range" min="0" max="100" value="100" class="slider" id="redSlide">
+    Green: <input type="range" min="0" max="100" value="100" class="slider" id="greenSlide">
+    Blue: <input type="range" min="0" max="100" value="100" class="slider" id="blueSlide">
+    Transparency: <input type="range" min="0" max="100" value="100" class="slider" id="trSlide">
     <p></p>
-    Green <input type="range" min="0" max="100" value="100" class="slider" id="greenSlide">
+    Size: <input type="range" min="5" max="40" value="0" class="slider" id="sizeSlide">
+    Circle Segment Count: <input type="range" min="5" max="40" value="0" class="slider" id="segSlide">
     <p></p>
-    Blue <input type="range" min="0" max="100" value="100" class="slider" id="blueSlide">
-    <p></p>
-    Transparency <input type="range" min="0" max="100" value="100" class="slider" id="trSlide">
-
-    <p></p>
-    Size <input type="range" min="5" max="40" value="0" class="slider" id="sizeSlide">
+    Triangle Type:
+    <button type="button" id="eTri" >Equilateral</button>
+    <button type="button" id="lTri" >Left</button>
+    <button type="button" id="rTri" >Right</button>
+    <button type="button" id="iTri" >Isoceles</button>
+    
 
     <script src="../lib/webgl-utils.js"></script>
     <script src="../lib/webgl-debug.js"></script>
