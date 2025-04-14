@@ -1,5 +1,8 @@
 // ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
+
+//This was done using most just the tutorial from the prof, I cited any AI generated lines.
+
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
   'uniform float u_Size;\n'+
