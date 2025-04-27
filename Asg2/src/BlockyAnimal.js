@@ -104,6 +104,8 @@ let g_purpleAngle = 0;
 let g_Animation=false;
 let g_AniPurple=false;
 
+let g_awawaSpeed=5;
+
 var g_shapesList = []; //new list for points
 
 //var g_points = [];  // The array for the position of a mouse press
@@ -125,6 +127,8 @@ function addActionsForHTMLUI(){
 
   document.getElementById('aniPurpleON').onclick = function() { g_AniPurple = true; };
   document.getElementById('aniPurpleOFF').onclick = function() { g_AniPurple = false; };
+
+  document.getElementById('speedSlide').addEventListener('mousemove', function(){ g_awawaSpeed = this.value; tick();});
 }
 
 function convertCoordinatesEventToGL(ev){
@@ -156,7 +160,7 @@ function updateAnimationAngles(){
   }
 
   if(g_AniPurple){
-    g_purpleAngle = (45*Math.sin(3*g_seconds)); //wavin head
+    g_purpleAngle = (10 * Math.sin(g_awawaSpeed*g_seconds) + 10); //restricted jaw movement, AI helped with this
   }
 }
 
@@ -177,31 +181,120 @@ function renderScene(){
 
   //hyrax body 
   var body = new Cube();
-  body.color = [61/255, 43/255, 0/255, 1] // have to divide by 255 to scale correctly
-  body.matrix.translate(-.25,-.75,0.0);
+  body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  body.matrix.translate(-.175, -.68, 0);
   body.matrix.rotate(0, 1, 0, 0);
-  body.matrix.scale(1,.5,.5);
+  body.matrix.scale(1,.48,.5);
   body.render();
 
-  //head
-  var leftArm = new Cube();
-  leftArm.color = [1,1,0,1];
-  leftArm.matrix.setTranslate(-.3, -.49, 0);
-  leftArm.matrix.rotate(g_yellowAngle, 0, 0, 1);
-  var yellowCoordinatesMat = new Matrix4(leftArm.matrix);
-  leftArm.matrix.scale(.49,.4,.48);
-  leftArm.matrix.translate(-.5, 0, 0.01);
-  leftArm.render();
+  //hyrax back
+  var back = new Cube();
+  back.color = [38/255, 27/255, 13/255,1];// have to divide by 255 to scale correctly
+  back.matrix.translate(-.02, -.6, 0);
+  back.matrix.rotate(0, 1, 0, 0);
+  back.matrix.scale(.75,.48,.5);
+  back.render();
 
+
+  // Head of the Hyrax
+  //head
+  var head = new Cube();
+  head.color = [48/255, 34/255,17/255,1];
+  head.matrix.setTranslate(-.3, -.49, 0);
+  head.matrix.rotate(g_yellowAngle, 0, 0, 1);
+  var yellowCoordinatesMat = new Matrix4(head.matrix);
+  head.matrix.scale(.38,.4,.48);
+  head.matrix.translate(-.5, -.2, 0.01);
+  head.render();
+
+  //above head box
+  var headbox = new Cube();
+  headbox.color = [48/255, 34/255,17/255,1];
+  headbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  headbox.matrix.rotate(0, 0, 0, 1);
+  headbox.matrix.scale(1.25,.175,1);
+  headbox.matrix.translate(-.2, 5.7, 0.01);
+  headbox.render();
+
+  //left ear on head box
+  var leftear = new Cube();
+  leftear.color = [38/255, 27/255, 13/255,1];
+  leftear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftear.matrix.rotate(0, 0, 0, 1);
+  leftear.matrix.scale(.3,.3,.28);
+  leftear.matrix.translate(2.4, 3.5, -0.1);
+  leftear.render();
+
+  //right ear on head box
+  var rightear = new Cube();
+  rightear.color = [38/255, 27/255, 13/255,1];
+  rightear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightear.matrix.rotate(0, 0, 0, 1);
+  rightear.matrix.scale(.3,.3,.28);
+  rightear.matrix.translate(2.4, 3.5, 2.7);
+  rightear.render();
+
+  //above jaw box
+  var headbox = new Cube();
+  headbox.color = [48/255, 34/255,17/255,1];
+  headbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  headbox.matrix.rotate(0, 0, 0, 1);
+  headbox.matrix.scale(.61,.45,1);
+  headbox.matrix.translate(-1, .57, 0.01);
+  headbox.render();
+
+  //nose box
+  var nosebox = new Cube();
+  nosebox.color = [31/255, 22/255,11/255,1];
+  nosebox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nosebox.matrix.rotate(0, 0, 0, 1);
+  nosebox.matrix.scale(.6,.42,.45);
+  nosebox.matrix.translate(-1, 1, .65);
+  nosebox.render();
+
+  //nose
+  var nose = new Cube();
+  nose.color = [0,0,0,1];
+  nose.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nose.matrix.rotate(0, 0, 0, 1);
+  nose.matrix.scale(.6,.44,.42);
+  nose.matrix.translate(-1.1, .8, .73);
+  nose.render();
+
+  //left eye
+  var lefteye = new Cube();
+  lefteye.color = [0,0,0,1];
+  lefteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  lefteye.matrix.rotate(0, 0, 0, 1);
+  lefteye.matrix.scale(.3,.3,.28);
+  lefteye.matrix.translate(-1, 2.34, 0);
+  lefteye.render();
+
+  //right eye
+  var righteye = new Cube();
+  righteye.color = [0,0,0,1];
+  righteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  righteye.matrix.rotate(0, 0, 0, 1);
+  righteye.matrix.scale(.3,.3,.28);
+  righteye.matrix.translate(-1, 2.34, 2.7);
+  righteye.render();
+
+
+  //Attached to head box
   //jaw box
   var box = new Cube();
-  box.color = [1,0,1,1];
+  box.color = [48/255, 34/255,17/255,1];
   box.matrix = yellowCoordinatesMat;
   box.matrix.translate(0,0,0);
   box.matrix.rotate(g_purpleAngle, 0, 0, 1);
-  box.matrix.scale(.2,.15,.48);
-  box.matrix.translate(-2.2, 0, 0.01);
+  box.matrix.scale(.53,.1,.48);
+  box.matrix.translate(-.81, -.85, 0.01);
   box.render();
+
+  //tongue box
+
+  
+
 
   var duration=performance.now()-startTime;
   sendTextToHTML(( " ms: "+ Math.floor(duration) +" fps: " +Math.floor(10000/duration)) , "numdot");
