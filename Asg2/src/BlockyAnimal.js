@@ -156,7 +156,7 @@ function tick(){
 
 function updateAnimationAngles(){
   if(g_Animation){
-    g_yellowAngle = (45*Math.sin(g_seconds)); //wavin arm
+    g_yellowAngle = (-15 *Math.sin(g_awawaSpeed*g_seconds)); 
   }
 
   if(g_AniPurple){
@@ -194,6 +194,26 @@ function renderScene(){
   back.matrix.rotate(0, 1, 0, 0);
   back.matrix.scale(.75,.48,.5);
   back.render();
+
+  //hyrax left front foot
+  var lfFoot = new Cube();
+  //lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lfFoot.color = [1,0,0,1];
+  lfFoot.matrix = new Matrix4(body.matrix); 
+  lfFoot.matrix.translate(.05, -.3, 0.01);
+  lfFoot.matrix.rotate(0, 0, 0, 1);
+  lfFoot.matrix.scale(.175,.5,.35);
+  lfFoot.render();
+
+
+
+  //hyrax left back foot
+
+
+  //hyrax right front foot
+
+
+  //hyrax right back foot
 
 
   // Head of the Hyrax
@@ -279,20 +299,45 @@ function renderScene(){
   righteye.matrix.translate(-1, 2.34, 2.7);
   righteye.render();
 
+  //left tooth
+  var leftTooth = new Cube();
+  leftTooth.color = [1,1,1,1];
+  leftTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftTooth.matrix.rotate(0, 0, 0, 1);
+  leftTooth.matrix.scale(.1,.3,.1);
+  leftTooth.matrix.translate(-6, .4, 3);
+  leftTooth.render();
+
+  //right tooth
+  var rightTooth = new Cube();
+  rightTooth.color = [1,1,1,1];
+  rightTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightTooth.matrix.rotate(0, 0, 0, 1);
+  rightTooth.matrix.scale(.1,.3,.1);
+  rightTooth.matrix.translate(-6, .4, 6.2);
+  rightTooth.render();
 
   //Attached to head box
   //jaw box
-  var box = new Cube();
-  box.color = [48/255, 34/255,17/255,1];
-  box.matrix = yellowCoordinatesMat;
-  box.matrix.translate(0,0,0);
-  box.matrix.rotate(g_purpleAngle, 0, 0, 1);
-  box.matrix.scale(.53,.1,.48);
-  box.matrix.translate(-.81, -.85, 0.01);
-  box.render();
+  var jaw = new Cube();
+  jaw.color = [48/255, 34/255,17/255,1];
+  jaw.matrix = yellowCoordinatesMat;
+  jaw.matrix.translate(0,0,0);
+  jaw.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  jaw.matrix.scale(.53,.1,.48);
+  jaw.matrix.translate(-.81, -.85, 0.01);
+  jaw.render();
 
+  //Tertiary attach to the jaw
   //tongue box
-
+  var tongue = new Cube();
+  tongue.color = [189/255, 83/255, 69/255, 1];
+  tongue.matrix = new Matrix4(jaw.matrix); //attaching to the jaw
+  jaw.matrix.translate(0,0,0);
+  tongue.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  tongue.matrix.scale(.8,.2,.8);
+  tongue.matrix.translate(.1, 4, .1);
+  tongue.render();
   
 
 
