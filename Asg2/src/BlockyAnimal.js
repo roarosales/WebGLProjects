@@ -92,7 +92,13 @@ let g_selectedColor=[1.0,1.0,1.0,1.0]; //started as white by default
 let g_selectedSize=5;
 let g_selectedType=POINT;
 let g_selectedSeg=10;
-let g_globalAngle = 0;
+
+
+//Environment angles
+let g_globalAngleX = 0;
+let g_globalAngleY = 0;
+
+
 let g_yellowAngle = 0;
 let g_purpleAngle = 0;
 let g_Animation=false;
@@ -107,26 +113,12 @@ var g_shapesList = []; //new list for points
 
 //from video 
 function addActionsForHTMLUI(){
-  //buttons for colors
-  document.getElementById('green').onclick = function() { g_selectedColor = [0.0,1.0,0.0,1.0]; };
-  document.getElementById('red').onclick = function() { g_selectedColor = [1.0,0.0,0.0,1.0]; };
-  document.getElementById('clearButton').onclick = function() { g_shapesList = []; renderAllShapes(); }; 
+  document.getElementById('angleSlideX').addEventListener('mousemove', function(){ g_globalAngleX = this.value; renderScene();});
+  document.getElementById('angleSlideY').addEventListener('mousemove', function(){ g_globalAngleY = this.value; renderScene();});
 
-  //buttons for shapes
-  document.getElementById('point').onclick = function() { g_selectedType = POINT; };
-  document.getElementById('triangle').onclick = function() { g_selectedType = TRIANGLE; };
-  document.getElementById('circle').onclick = function() { g_selectedType = CIRCLE; };
-  document.getElementById('eraser').onclick = function() { g_selectedColor = [0.0,0.0,0.0,1.0]; };
 
-  //sliders for color
-  document.getElementById('redSlide').addEventListener('mouseup', function(){ g_selectedColor[0] = this.value/100;});
-  document.getElementById('greenSlide').addEventListener('mouseup', function(){ g_selectedColor[1] = this.value/100;});
-  document.getElementById('blueSlide').addEventListener('mouseup', function(){ g_selectedColor[2] = this.value/100;});
-
-  document.getElementById('angleSlide').addEventListener('mousemove', function(){ g_globalAngle = this.value; renderAllShapes();});
-  
-  document.getElementById('yellowSlide').addEventListener('mousemove', function(){ g_yellowAngle = this.value; renderAllShapes();});
-  document.getElementById('purpleSlide').addEventListener('mousemove', function(){ g_purpleAngle = this.value; renderAllShapes();});
+  document.getElementById('yellowSlide').addEventListener('mousemove', function(){ g_yellowAngle = this.value; renderScene();});
+  document.getElementById('purpleSlide').addEventListener('mousemove', function(){ g_purpleAngle = this.value; renderScene();});
 
   document.getElementById('animationButtonOn').onclick = function() { g_Animation = true; };
   document.getElementById('animationButtonOff').onclick = function() { g_Animation = false; };
@@ -153,7 +145,7 @@ function tick(){
   console.log(g_seconds);
 
   updateAnimationAngles();
-  renderAllShapes();
+  renderScene();
 
   requestAnimationFrame(tick);
 }
@@ -169,11 +161,13 @@ function updateAnimationAngles(){
 }
 
 //renderScene()
-function renderAllShapes(){
+function renderScene(){
 
   var startTime = performance.now();
 
-  var globalRotMat = new Matrix4().rotate(g_globalAngle,0,1,0)
+  var globalRotMat = new Matrix4().rotate(g_globalAngleX,0,1,0) //horizontal rotation
+  globalRotMat.rotate(g_globalAngleY,1,0,0);
+  
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotMat.elements);
 
   // Clear <canvas>
@@ -181,34 +175,32 @@ function renderAllShapes(){
   gl.clear(gl.COLOR_BUFFER_BIT);
 
 
-  //body
+  //hyrax body 
   var body = new Cube();
-  body.color = [1.0,0.0,0.0,1.0];
+  body.color = [61/255, 43/255, 0/255, 1] // have to divide by 255 to scale correctly
   body.matrix.translate(-.25,-.75,0.0);
   body.matrix.rotate(0, 1, 0, 0);
-  body.matrix.scale(0.5,.3,.5);
+  body.matrix.scale(1,.5,.5);
   body.render();
 
-  //yellow arm
+  //head
   var leftArm = new Cube();
   leftArm.color = [1,1,0,1];
-  leftArm.matrix.setTranslate(0, -.5, 0.0);
-
+  leftArm.matrix.setTranslate(-.3, -.49, 0);
   leftArm.matrix.rotate(g_yellowAngle, 0, 0, 1);
-  
   var yellowCoordinatesMat = new Matrix4(leftArm.matrix);
-  leftArm.matrix.scale(.25,.7,.5);
-  leftArm.matrix.translate(-.5, 0, 0);
+  leftArm.matrix.scale(.49,.4,.48);
+  leftArm.matrix.translate(-.5, 0, 0.01);
   leftArm.render();
 
-  //top box
+  //jaw box
   var box = new Cube();
   box.color = [1,0,1,1];
   box.matrix = yellowCoordinatesMat;
-  box.matrix.translate(0,.65,0);
+  box.matrix.translate(0,0,0);
   box.matrix.rotate(g_purpleAngle, 0, 0, 1);
-  box.matrix.scale(.3,.3,.3);
-  box.matrix.translate(-.5,0,-.01);
+  box.matrix.scale(.2,.15,.48);
+  box.matrix.translate(-2.2, 0, 0.01);
   box.render();
 
   var duration=performance.now()-startTime;
@@ -278,7 +270,7 @@ function main() {
   // Clear <canvas>
   //gl.clear(gl.COLOR_BUFFER_BIT);
 
-  //renderAllShapes();
+  //renderScene();
 
   requestAnimationFrame(tick);
 
