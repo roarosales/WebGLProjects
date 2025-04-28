@@ -101,6 +101,7 @@ let g_globalAngleY = 0;
 
 let g_yellowAngle = 0;
 let g_purpleAngle = 0;
+let g_legAngle = 0;
 let g_Animation=false;
 let g_AniPurple=false;
 
@@ -162,6 +163,10 @@ function updateAnimationAngles(){
   if(g_AniPurple){
     g_purpleAngle = (10 * Math.sin(g_awawaSpeed*g_seconds) + 10); //restricted jaw movement, AI helped with this
   }
+  
+  if(g_legAngle){
+    g_legAngle = (-5 *Math.sin(g_awawaSpeed*g_seconds)); 
+  }
 }
 
 //renderScene()
@@ -197,24 +202,40 @@ function renderScene(){
 
   //hyrax left front foot
   var lfFoot = new Cube();
-  //lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
-  lfFoot.color = [1,0,0,1];
+  lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
   lfFoot.matrix = new Matrix4(body.matrix); 
   lfFoot.matrix.translate(.05, -.3, 0.01);
-  lfFoot.matrix.rotate(0, 0, 0, 1);
+  lfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
   lfFoot.matrix.scale(.175,.5,.35);
   lfFoot.render();
 
+  //hyrax right front foot
+  var rfFoot = new Cube();
+  rfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rfFoot.matrix = new Matrix4(body.matrix); 
+  rfFoot.matrix.translate(.05, -.3, .64);
+  rfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rfFoot.matrix.scale(.175,.5,.35);
+  rfFoot.render();
 
 
   //hyrax left back foot
-
-
-  //hyrax right front foot
-
+  var lbFoot = new Cube();
+  lbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lbFoot.matrix = new Matrix4(body.matrix); 
+  lbFoot.matrix.translate(.76, -.3, 0.01);
+  lbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lbFoot.matrix.scale(.175,.5,.35);
+  lbFoot.render();
 
   //hyrax right back foot
-
+  var rbFoot = new Cube();
+  rbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rbFoot.matrix = new Matrix4(body.matrix); 
+  rbFoot.matrix.translate(.76, -.3, .64);
+  rbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rbFoot.matrix.scale(.175,.5,.35);
+  rbFoot.render();
 
   // Head of the Hyrax
   //head
@@ -359,7 +380,6 @@ function click(ev) {
   let [x,y]=convertCoordinatesEventToGL(ev); //made it local
   var segments= g_selectedSeg; //using the selected segments
 
-
   let point;
   if(g_selectedType==POINT){
     point = new Point();
@@ -392,6 +412,15 @@ function click(ev) {
 
 }
 
+
+//this tracks mouse movements
+function mouseMove(ev){
+  let [x,y]=convertCoordinatesEventToGL(ev); 
+  g_globalAngleX = x*180;
+  g_globalAngleY = y*180;
+}
+
+
 function main() {
   setupWebGL();
   connectVariableToGLSL();
@@ -399,8 +428,22 @@ function main() {
 
 
   // Register function (event handler) to be called on a mouse press
-  canvas.onmousedown = click; //simplified to just click
-  canvas.onmousemove = function(ev) {if(ev.buttons==1) {click(ev)}};
+  //canvas.onmousedown = click; //simplified to just click
+  canvas.onmousemove = function(ev) {
+    if(ev.buttons==1) { //if left click then we allow for mouse move
+      mouseMove(ev);
+    }
+  };
+
+  //ensures that if the mouse is down that both the mouth and head move
+  canvas.onmousedown= function(ev){
+    if (ev.shiftKey){
+      g_Animation=!g_Animation; //originally had if statements but chatgpt showed me this better solution
+      g_AniPurple = g_Animation;
+      g_legAngle=g_Animation;
+    }
+  }
+  
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
