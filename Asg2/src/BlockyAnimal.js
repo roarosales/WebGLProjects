@@ -164,7 +164,7 @@ function updateAnimationAngles(){
     g_purpleAngle = (10 * Math.sin(g_awawaSpeed*g_seconds) + 10); //restricted jaw movement, AI helped with this
   }
   
-  if(g_legAngle){
+  if(g_legAngle){ //it checks itself and resets to 0
     g_legAngle = (-5 *Math.sin(g_awawaSpeed*g_seconds)); 
   }
 }
@@ -261,7 +261,7 @@ function renderScene(){
   var leftear = new Cube();
   leftear.color = [38/255, 27/255, 13/255,1];
   leftear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
-  leftear.matrix.rotate(0, 0, 0, 1);
+  leftear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
   leftear.matrix.scale(.3,.3,.28);
   leftear.matrix.translate(2.4, 3.5, -0.1);
   leftear.render();
@@ -270,7 +270,7 @@ function renderScene(){
   var rightear = new Cube();
   rightear.color = [38/255, 27/255, 13/255,1];
   rightear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
-  rightear.matrix.rotate(0, 0, 0, 1);
+  rightear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
   rightear.matrix.scale(.3,.3,.28);
   rightear.matrix.translate(2.4, 3.5, 2.7);
   rightear.render();
@@ -360,7 +360,13 @@ function renderScene(){
   tongue.matrix.translate(.1, 4, .1);
   tongue.render();
   
-
+  //The tail is a 3D triangle
+  var tail = new RightTriangle3D();
+  tail.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  tail.matrix.translate(.9, -.6, .17);
+  tail.matrix.rotate(270, 0, 1, 0);
+  tail.matrix.scale(.15,.15,.15);
+  tail.render();
 
   var duration=performance.now()-startTime;
   sendTextToHTML(( " ms: "+ Math.floor(duration) +" fps: " +Math.floor(10000/duration)) , "numdot");
@@ -440,7 +446,7 @@ function main() {
     if (ev.shiftKey){
       g_Animation=!g_Animation; //originally had if statements but chatgpt showed me this better solution
       g_AniPurple = g_Animation;
-      g_legAngle=g_Animation;
+      g_legAngle=g_Animation;//the legs/ear only animate with this special animation
     }
   }
   

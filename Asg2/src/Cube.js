@@ -26,19 +26,19 @@ class Cube{
         drawTriangle3D([0,1,0, 0,1,1, 1,1,1]);
         drawTriangle3D([0,1,0, 1,1,1, 1,1,0]);
         
-        // Back of cube - AI Helped with these two lines below
-        drawTriangle3D([0,0,1, 1,1,1, 1,0,1]);
-        drawTriangle3D([0,0,1, 0,1,1, 1,1,1]);
-
         // Bottom of cube - AI Helped with these two lines
         drawTriangle3D([0,0,0, 0,0,1, 1,0,1]);
         drawTriangle3D([0,0,0, 1,0,1, 1,0,0]);
 
-        //Right Side of cube
+        // Back of cube - AI Helped with these two lines below
+        drawTriangle3D([0,0,1, 1,1,1, 1,0,1]);
+        drawTriangle3D([0,0,1, 0,1,1, 1,1,1]);
+
+        //Right Side of cube - similar to previous stuff
         drawTriangle3D([1,0,0, 1,1,0, 1,1,1]);
         drawTriangle3D([1,0,0, 1,1,1, 1,0,1]);
 
-        //Left Side of cube
+        //Left Side of cube - similar to previous stuff
         drawTriangle3D([0,0,0, 0,0,1, 0,1,1]);
         drawTriangle3D([0,0,0, 0,1,1, 0,1,0]);
 
