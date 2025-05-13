@@ -23,10 +23,11 @@ var FSHADER_SOURCE =
   'precision mediump float;\n' +
   'varying vec2 v_UV;\n' +  
   'uniform vec4 u_FragColor;\n' +  
+  'uniform sampler2D u_Sampler0;\n' +  
   'void main() {\n' +
   '  gl_FragColor = u_FragColor;\n' +
   '  gl_FragColor = vec4(v_UV, 1.0,1.0);\n'+
-  '  gl_FragColor = textured2D(u_Sampler0, v_UV);\n'+
+  '  gl_FragColor = texture2D(u_Sampler0, v_UV);\n'+
   '}\n';
 
 //Making global variables
@@ -471,9 +472,10 @@ function initTextures(gl,n){
     return false;
   }
 
-  var u_Sampler= gl.getUniformLocation(gl.program, 'u_Sampler');
-  if(!u_Sampler){
-    console.log('Failed to get the storage location of u_Sampler');
+  var u_Sampler0= gl.getUniformLocation(gl.program, 'u_Sampler0');
+  if(!u_Sampler0){
+    console.log('Failed to get the storage location of u_Sampler0');
+    return false;
   }
 
   var image= new Image();
@@ -482,10 +484,24 @@ function initTextures(gl,n){
     return false;
   }
 
-  image.onload=function(){ loadTexture(gl,n,texture, u_Sampler, image);}
-  image.src='sky.jpg';
+  image.onload=function(){ loadTexture(gl,n,texture, u_Sampler0, image);};
+  image.src='test.jpg';
 
   return true;
+}
+
+function loadTexture(gl, n, texture, u_Sampler, image){
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip image y axis
+
+  gl.activeTexture(gl.TEXTURE0); //enable texture
+
+  gl.bindTexture(gl.TEXTURE_2D,texture); //bind texture object to target
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //set texture parameters
+
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); //set texture image
+
+  gl.uniform1i(u_Sampler, 0); //set the texture unit 0 to sampler
 }
 
 function main() {
@@ -512,6 +528,8 @@ function main() {
   }
   
   // Specify the color for clearing <canvas>
+
+  initTextures(gl,0);
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Clear <canvas>
