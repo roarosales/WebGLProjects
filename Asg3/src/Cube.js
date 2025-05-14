@@ -6,12 +6,15 @@ class Cube{
       //this.size=5.0;
       //this.segments = segments;
       this.matrix = new Matrix4();
+      this.textureNum=-2;
     }
     render(){
         //var xy = this.position;
         var rgba = this.color;
         //var size= this.size;
-  
+        gl.uniform1i(u_WhichTexture, this.textureNum); // no matter what value, it's ALWAYS 0
+        
+        //console.log("u_WhichTexture is " + u_WhichTexture); //u_WhichTexture stays undefined
         // Pass the color of a point to u_FragColor variable
         gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
 
@@ -20,9 +23,7 @@ class Cube{
 
         //Front of cube
         drawTriangle3DUV([0,0,0, 1,1,0, 1,0,0], [1,0, 1,1, 1,1]);
-        //drawTriangle3D([0,0,0, 1,1,0, 1,0,0]);
-        drawTriangle3D([0,0,0, 0,1,0, 1,1,0]);
-
+        drawTriangle3DUV([0,0,0, 0,1,0, 1,1,0], [0,0, 0,1, 1,1]);
         
         //Top of cube
         drawTriangle3D([0,1,0, 0,1,1, 1,1,1]);

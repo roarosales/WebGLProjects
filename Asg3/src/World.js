@@ -13,8 +13,8 @@ var VSHADER_SOURCE =
   'uniform mat4 u_ViewMatrix;\n'+
   'uniform mat4 u_ProjectionMatrix;\n'+
   'void main() {\n' +
-  '  gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;\n' +
-  '  v_UV = a_UV;\n'+
+  ' gl_Position = u_ProjectionMatrix* u_ViewMatrix* u_GlobalRotateMatrix * u_ModelMatrix * a_Position;\n' +
+  ' v_UV = a_UV;\n'+
   '}\n';
 //tried cleaning up but VS Code would only let it work as a single line which is harder to read
 
@@ -24,10 +24,24 @@ var FSHADER_SOURCE =
   'varying vec2 v_UV;\n' +  
   'uniform vec4 u_FragColor;\n' +  
   'uniform sampler2D u_Sampler0;\n' +  
+  'uniform sampler2D u_Sampler1;\n' + 
+  'uniform int u_WhichTexture;\n' +  
   'void main() {\n' +
-  '  gl_FragColor = u_FragColor;\n' +
-  '  gl_FragColor = vec4(v_UV, 1.0,1.0);\n'+
-  '  gl_FragColor = texture2D(u_Sampler0, v_UV);\n'+
+  ' if(u_WhichTexture == -2){ \n' +
+  '   gl_FragColor = u_FragColor; \n' +
+  '}\n'+
+  ' else if(u_WhichTexture == -1){ \n' +
+  '   gl_FragColor = vec4(v_UV, 1.0,1.0); \n' +
+  ' }\n'+
+  ' else if(u_WhichTexture == 0){\n'+
+  '   gl_FragColor = texture2D(u_Sampler0, v_UV);\n'+
+  ' }\n' +
+  ' else if(u_WhichTexture == 1){\n'+
+  '   gl_FragColor = texture2D(u_Sampler1, v_UV);\n'+
+  ' }\n' +
+  ' else{ // puts reddish if error \n'+
+  '   gl_FragColor = vec4(1,.2,.2,1);\n'+
+  ' }\n'+
   '}\n';
 
 //Making global variables
@@ -42,7 +56,8 @@ let u_GlobalRotateMatrix;
 let a_UV;
 let u_Size;
 let u_ProjectionMatrix;
-let u_ViewMatrix
+let u_ViewMatrix;
+let u_WhichTexture; // decides if texture or not
 
 //Sampler Variables
 let u_Sampler0;
@@ -97,7 +112,24 @@ function connectVariableToGLSL(){
     console.log('Failed to get the storage location of u_GlobalRotateMatrix');
     return;
   }
+  //Storage location of size
+  u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
+  if (!u_ProjectionMatrix) {
+    console.log('Failed to get the storage location of u_ProjectionMatrix');
+    return;
+  }
 
+  //Storage location of ViewMatrix
+  u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+  if (!u_ViewMatrix) {
+    console.log('Failed to get the storage location of u_ViewMatrix');
+    return;
+  }
+  u_WhichTexture = gl.getUniformLocation(gl.program, 'u_WhichTexture');
+  if (!u_WhichTexture) {
+    console.log('Failed to get the storage location of u_WhichTexture');
+    return;
+  }
   //New storage locations in asg3
   //Storage location of a_UV
   a_UV = gl.getAttribLocation(gl.program, 'a_UV');
@@ -113,26 +145,21 @@ function connectVariableToGLSL(){
     return;
   }
 
-  //Storage location of size
-  u_ProjectionMatrix = gl.getUniformLocation(gl.program, 'u_ProjectionMatrix');
-  if (!u_ProjectionMatrix) {
-    console.log('Failed to get the storage location of u_ProjectionMatrix');
-    return;
-  }
-
-  //Storage location of ViewMatrix
-  u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-  if (!u_ViewMatrix) {
-    console.log('Failed to get the storage location of u_ViewMatrix');
-    return;
-  }
-
-  //Storage location of ViewMatrix
+  
+  //Storage location of first texture
   u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
   if (!u_Sampler0) {
     console.log('Failed to get the storage location of u_Sampler0');
     return;
   }
+  //Storage location of second texture
+  u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+  if (!u_Sampler1) {
+    console.log('Failed to get the storage location of u_Sampler1');
+    return;
+  }
+
+  
 
   var identityM = new Matrix4();
   gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
@@ -213,11 +240,11 @@ function tick(){
 
 function updateAnimationAngles(){
   if(g_Animation){
-    g_yellowAngle = (-15 *Math.sin(g_awawaSpeed*g_seconds)); 
+    g_yellowAngle = (-5 *Math.sin(g_awawaSpeed*g_seconds)); 
   }
 
   if(g_AniPurple){
-    g_purpleAngle = (10 * Math.sin(g_awawaSpeed*g_seconds) + 10); //restricted jaw movement, AI helped with this
+    g_purpleAngle = (5 * Math.sin(g_awawaSpeed*g_seconds) + 10); //restricted jaw movement, AI helped with this
   }
   
   if(g_legAngle){ //it checks itself and resets to 0
@@ -225,10 +252,36 @@ function updateAnimationAngles(){
   }
 }
 
+//var g_camera= new Camera();
+
+var g_map=[
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 1, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 1, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+];
+
+
+
+var g_eye = [0,0,3];
+var g_at = [0,0,-100];
+var g_up = [0,1,0];
+
 //renderScene()
 function renderScene(){
-
   var startTime = performance.now();
+
+  var projMat = new Matrix4();
+  projMat.setPerspective(50, canvas.width/canvas.height, 1, 100);
+  gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
+
+  var viewMat = new Matrix4();
+  viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
+  gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
   var globalRotMat = new Matrix4().rotate(g_globalAngleX,0,1,0) //horizontal rotation
   globalRotMat.rotate(g_globalAngleY,1,0,0);
@@ -239,21 +292,55 @@ function renderScene(){
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
+  //Generating the map
+  for(x=0;x<8;x++){
+    for(y=0;y<8;y++){
+      if(g_map[x][y]==1){
+        var body = new Cube();
+        body.color = [1,1,1,1];
+        body.textureNum = 1;
+        body.matrix.translate(x-4, -.95, y-4);
+        body.render();
+      }
+    }
+  }
+  
+  //sky box 
+  var skybox = new Cube();
+  skybox.color = [129/255, 192/255, 1, 1]; // have to divide by 255 to scale correctly
+  skybox.textureNum = -2;
+  skybox.matrix.translate(0, -.75, 0);
+  skybox.matrix.scale(50,50,50);
+  skybox.matrix.translate(-.5, -.5, -.5);
+  skybox.render();
 
-  //hyrax body 
+
+  //floor cube 
+  var floor = new Cube();
+  floor.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  floor.textureNum = 0;
+  floor.matrix.translate(0, -.85, 0);
+  floor.matrix.scale(10,0,10);
+  floor.matrix.translate(-.5, -1.8, -.5);
+  floor.render();
+
+
+  //hyrax1 body 
   var body = new Cube();
   body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  body.textureNum = -2;
   body.matrix.translate(-.175, -.68, 0);
-  body.matrix.rotate(0, 1, 0, 0);
+  body.matrix.rotate(0, 0, 1, 0);
   body.matrix.scale(1,.48,.5);
   body.render();
 
   //hyrax back
   var back = new Cube();
+  back.matrix = new Matrix4(body.matrix); 
   back.color = [38/255, 27/255, 13/255,1];// have to divide by 255 to scale correctly
-  back.matrix.translate(-.02, -.6, 0);
+  back.matrix.translate(.165, 0, 0);
   back.matrix.rotate(0, 1, 0, 0);
-  back.matrix.scale(.75,.48,.5);
+  back.matrix.scale(.75, 1.1, 1);
   back.render();
 
   //hyrax left front foot
@@ -296,22 +383,23 @@ function renderScene(){
   // Head of the Hyrax
   //head
   var head = new Cube();
+  head.matrix = new Matrix4(body.matrix); 
   head.color = [48/255, 34/255,17/255,1];
-  head.matrix.setTranslate(-.3, -.49, 0);
+  //head.matrix.setTranslate(-.3, -.49, 0);
   head.matrix.rotate(g_yellowAngle, 0, 0, 1);
   var yellowCoordinatesMat = new Matrix4(head.matrix);
-  head.matrix.scale(.38,.4,.48);
-  head.matrix.translate(-.5, -.2, 0.01);
+  head.matrix.scale(.35,.75,.9);
+  head.matrix.translate(-.8, .34, 0.01);
   head.render();
 
   //above head box
-  var headbox = new Cube();
-  headbox.color = [48/255, 34/255,17/255,1];
-  headbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
-  headbox.matrix.rotate(0, 0, 0, 1);
-  headbox.matrix.scale(1.25,.175,1);
-  headbox.matrix.translate(-.2, 5.7, 0.01);
-  headbox.render();
+  var abHeadbox = new Cube();
+  abHeadbox.color = [48/255, 34/255,17/255,1];
+  abHeadbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abHeadbox.matrix.rotate(0, 0, 0, 1);
+  abHeadbox.matrix.scale(1.25,.175,1);
+  abHeadbox.matrix.translate(-.2, 5.7, 0.01);
+  abHeadbox.render();
 
   //left ear on head box
   var leftear = new Cube();
@@ -332,13 +420,13 @@ function renderScene(){
   rightear.render();
 
   //above jaw box
-  var headbox = new Cube();
-  headbox.color = [48/255, 34/255,17/255,1];
-  headbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
-  headbox.matrix.rotate(0, 0, 0, 1);
-  headbox.matrix.scale(.61,.45,1);
-  headbox.matrix.translate(-1, .57, 0.01);
-  headbox.render();
+  var abJawBox = new Cube();
+  abJawBox.color = [48/255, 34/255,17/255,1];
+  abJawBox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abJawBox.matrix.rotate(0, 0, 0, 1);
+  abJawBox.matrix.scale(.61,.45,1);
+  abJawBox.matrix.translate(-1, .57, 0.01);
+  abJawBox.render();
 
   //nose box
   var nosebox = new Cube();
@@ -398,11 +486,11 @@ function renderScene(){
   //jaw box
   var jaw = new Cube();
   jaw.color = [48/255, 34/255,17/255,1];
-  jaw.matrix = yellowCoordinatesMat;
+  jaw.matrix = new Matrix4(head.matrix); ;
   jaw.matrix.translate(0,0,0);
   jaw.matrix.rotate(g_purpleAngle, 0, 0, 1);
-  jaw.matrix.scale(.53,.1,.48);
-  jaw.matrix.translate(-.81, -.85, 0.01);
+  jaw.matrix.scale(1,.24,1);
+  jaw.matrix.translate(-.62, 0, 0.01);
   jaw.render();
 
   //Tertiary attach to the jaw
@@ -416,13 +504,6 @@ function renderScene(){
   tongue.matrix.translate(.1, 4, .1);
   tongue.render();
   
-  //The tail is a 3D triangle
-  var tail = new RightTriangle3D();
-  tail.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
-  tail.matrix.translate(.9, -.6, .17);
-  tail.matrix.rotate(270, 0, 1, 0);
-  tail.matrix.scale(.15,.15,.15);
-  tail.render();
 
   var duration=performance.now()-startTime;
   sendTextToHTML(( " ms: "+ Math.floor(duration) +" fps: " +Math.floor(10000/duration)) , "numdot");
@@ -436,6 +517,8 @@ function sendTextToHTML(text,htmlID){
   }
   htmlElm.innerHTML=text;
 }
+
+// Controlling Controls
 
 function click(ev) {
   //Getting the WEBGL Coordinates
@@ -462,53 +545,68 @@ function click(ev) {
 function mouseMove(ev){
   let [x,y]=convertCoordinatesEventToGL(ev); 
   g_globalAngleX = x*180;
-  g_globalAngleY = y*180;
+  let minY = -10; // Adjust as needed
+  let maxY = 60;  // Adjust as needed
+  g_globalAngleY = Math.max(minY, Math.min(y * 60, maxY)); //chatgpt generated this line
 }
 
-function initTextures(gl,n){
-  var texture=gl.createTexture();
-  if(!texture){
-    console.log('Failed to create the texture object');
-    return false;
+function keydown(ev){
+  if (ev.keyCode ==65){ // a key
+    g_eye[0] -=0.2;
   }
-
-  var u_Sampler0= gl.getUniformLocation(gl.program, 'u_Sampler0');
-  if(!u_Sampler0){
-    console.log('Failed to get the storage location of u_Sampler0');
-    return false;
+  else if(ev.keyCode==68){ // d key
+    g_eye[0] += 0.2;
   }
+  else if(ev.keyCode==87){ // w key
+    g_eye[2] -= 1;
+  }
+  else if(ev.keyCode==83){ // s key
+    g_eye[2] += 1;
+  }
+  else if(ev.keyCode==81){ // q key
+    g_globalAngleX += 5;
+  }
+  else if(ev.keyCode==69){ // s key
+    g_globalAngleX -= 5;
+  }
+  renderScene();
+  console.log(ev.keyCode);
+}
 
+function initTextures(){
   var image= new Image();
   if(!image){
     console.log('Failed to create the image object');
     return false;
   }
+  image.onload=function(){ sendTextureToTEXTURE0(image);};
+  image.src='./images/rck_3.png';
 
-  image.onload=function(){ loadTexture(gl,n,texture, u_Sampler0, image);};
-  image.src='test.jpg';
-
+  
   return true;
 }
 
-function loadTexture(gl, n, texture, u_Sampler, image){
+function sendTextureToTEXTURE0(image){
+  //creates the actual texture that connects to our gl object
+  var texture=gl.createTexture();
+  if(!texture){
+    console.log('Failed to create the texture object');
+    return false;
+  }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip image y axis
-
   gl.activeTexture(gl.TEXTURE0); //enable texture
-
   gl.bindTexture(gl.TEXTURE_2D,texture); //bind texture object to target
-
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //set texture parameters
-
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); //set texture image
-
-  gl.uniform1i(u_Sampler, 0); //set the texture unit 0 to sampler
+  gl.uniform1i(u_Sampler0, 0); //u_Sampler0 is used
+  console.log("finished loadTexture");
 }
 
 function main() {
   setupWebGL();
   connectVariableToGLSL();
   addActionsForHTMLUI();
-
+  initTextures();// initialize textures
 
   // Register function (event handler) to be called on a mouse press
   //canvas.onmousedown = click; //simplified to just click
@@ -526,10 +624,11 @@ function main() {
       g_legAngle=g_Animation;//the legs/ear only animate with this special animation
     }
   }
+  document.addEventListener('keydown', keydown); //added event listener for when keydown
+
   
   // Specify the color for clearing <canvas>
 
-  initTextures(gl,0);
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   // Clear <canvas>
