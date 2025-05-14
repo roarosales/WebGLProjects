@@ -291,7 +291,7 @@ function renderScene(){
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.clear(gl.COLOR_BUFFER_BIT);
-
+  
   //Generating the map
   for(x=0;x<8;x++){
     for(y=0;y<8;y++){
@@ -324,9 +324,13 @@ function renderScene(){
   floor.matrix.translate(-.5, -1.8, -.5);
   floor.render();
 
+  var hyraxMatrix1 = new Matrix4();
+  //hyraxMatrix1.scale(.5,.5,.5);
+  
 
   //hyrax1 body 
   var body = new Cube();
+  body.matrix= new Matrix4(hyraxMatrix1);
   body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
   body.textureNum = -2;
   body.matrix.translate(-.175, -.68, 0);
