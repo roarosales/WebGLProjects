@@ -1184,7 +1184,8 @@ function click(ev) {
 //this tracks mouse movements
 function mouseMove(ev){
   let [x,y]=convertCoordinatesEventToGL(ev); 
-  g_globalAngleX = x*180;
+  g_globalAngleX = x*60;
+  //for y I restricted downward moving to limit clipping
   let minY = -10; //chatgpt helped with this
   let maxY = 60;  //chatgpt helped with this
   g_globalAngleY = Math.max(minY, Math.min(y * 60, maxY)); //chatgpt generated this line for clamping the angles
