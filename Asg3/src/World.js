@@ -319,7 +319,7 @@ var g_map = [
 ];
 
 
-var g_eye = [0,0,3];
+var g_eye = [0,1,3];
 var g_at = [0,0,-100];
 var g_up = [0,1,0];
 
@@ -329,10 +329,12 @@ function renderScene(){
 
   var projMat = new Matrix4();
   projMat.setPerspective(50, canvas.width/canvas.height, 1, 100);
+  //gl.uniformMatrix4fv(u_ProjectionMatrix, false, camera.projectionMatrix.elements);
   gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
   var viewMat = new Matrix4();
   viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
+  //gl.uniformMatrix4fv(u_ViewMatrix, false, camera.viewMatrix.elements);
   gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
   var globalRotMat = new Matrix4().rotate(g_globalAngleX,0,1,0) //horizontal rotation
@@ -1204,8 +1206,11 @@ function keydown(ev){
   else if(ev.keyCode==81){ // q key
     g_globalAngleX += 5;
   }
-  else if(ev.keyCode==69){ // s key
+  else if(ev.keyCode==69){ // e key
     g_globalAngleX -= 5;
+  }
+  else if(ev.keyCode==70){ // f key
+    placeBlock();
   }
   renderScene();
   console.log(ev.keyCode);
@@ -1229,6 +1234,16 @@ function initTextures(){
   image2.src='./images/Stone_13-512x512.png'; // Rock2 Texture
 
   return true;
+}
+
+function placeBlock(){
+  var body = new Cube();
+  body.color = [1,1,1,1];
+  body.textureNum = 3;
+  body.matrix.scale(.3,.9,.3);
+  body.matrix.translate(x-16, 0, y-16);
+  body.render();
+  renderScene();
 }
 
 function sendTextureToTEXTURE0(image){
@@ -1278,12 +1293,19 @@ function sendTextureToTEXTURE2(image){
   console.log("finished loadTexture 2");
 }
 
+//doing let camea
+let camera;
+
 function main() {
+
+  
   setupWebGL();
   connectVariableToGLSL();
   addActionsForHTMLUI();
+  camera = new Camera();
   initTextures();// initialize textures
 
+  
   // Register function (event handler) to be called on a mouse press
   //canvas.onmousedown = click; //simplified to just click
   canvas.onmousemove = function(ev) {
