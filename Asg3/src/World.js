@@ -1185,9 +1185,9 @@ function click(ev) {
 function mouseMove(ev){
   let [x,y]=convertCoordinatesEventToGL(ev); 
   g_globalAngleX = x*180;
-  let minY = -10; // Adjust as needed
-  let maxY = 60;  // Adjust as needed
-  g_globalAngleY = Math.max(minY, Math.min(y * 60, maxY)); //chatgpt generated this line
+  let minY = -10; //chatgpt helped with this
+  let maxY = 60;  //chatgpt helped with this
+  g_globalAngleY = Math.max(minY, Math.min(y * 60, maxY)); //chatgpt generated this line for clamping the angles
 }
 
 function keydown(ev){
