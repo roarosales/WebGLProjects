@@ -14,7 +14,7 @@ var VSHADER_SOURCE =
   'uniform mat4 u_ProjectionMatrix;\n'+
   'void main() {\n' +
   ' gl_Position = u_ProjectionMatrix* u_ViewMatrix* u_GlobalRotateMatrix * u_ModelMatrix * a_Position;\n' +
-  ' v_UV = a_UV;\n'+
+  ' v_UV = a_UV;\n'+ 
   '}\n';
 //tried cleaning up but VS Code would only let it work as a single line which is harder to read
 
@@ -25,6 +25,7 @@ var FSHADER_SOURCE =
   'uniform vec4 u_FragColor;\n' +  
   'uniform sampler2D u_Sampler0;\n' +  
   'uniform sampler2D u_Sampler1;\n' + 
+  'uniform sampler2D u_Sampler2;\n' + 
   'uniform int u_WhichTexture;\n' +  
   'void main() {\n' +
   ' if(u_WhichTexture == -2){ \n' +
@@ -38,6 +39,9 @@ var FSHADER_SOURCE =
   ' }\n' +
   ' else if(u_WhichTexture == 1){\n'+
   '   gl_FragColor = texture2D(u_Sampler1, v_UV);\n'+
+  ' }\n' +
+  ' else if(u_WhichTexture == 2){\n'+
+  '   gl_FragColor = texture2D(u_Sampler2, v_UV);\n'+
   ' }\n' +
   ' else{ // puts reddish if error \n'+
   '   gl_FragColor = vec4(1,.2,.2,1);\n'+
@@ -61,6 +65,8 @@ let u_WhichTexture; // decides if texture or not
 
 //Sampler Variables
 let u_Sampler0;
+let u_Sampler1;
+let u_Sampler2;
 
 //this stays the same for the rest of quarter
 function setupWebGL(){
@@ -137,14 +143,6 @@ function connectVariableToGLSL(){
     console.log('Failed to get the storage location of a_UV');
     return;
   }
-
-  //Storage location of size
-  u_Size = gl.getUniformLocation(gl.program, 'u_Size');
-  if (!u_Size) {
-    console.log('Failed to get the storage location of u_Size');
-    return;
-  }
-
   
   //Storage location of first texture
   u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
@@ -158,7 +156,21 @@ function connectVariableToGLSL(){
     console.log('Failed to get the storage location of u_Sampler1');
     return;
   }
+  //Storage location of third texture
+  u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
+  if (!u_Sampler2) {
+    console.log('Failed to get the storage location of u_Sampler2');
+    return;
+  }
 
+  //Storage location of size
+  u_Size = gl.getUniformLocation(gl.program, 'u_Size');
+  if (!u_Size) {
+    console.log('Failed to get the storage location of u_Size');
+    return;
+  }
+
+  
   
 
   var identityM = new Matrix4();
@@ -252,19 +264,59 @@ function updateAnimationAngles(){
   }
 }
 
-//var g_camera= new Camera();
+// I used Vertex AI to comment this matrix initially, but I created the matrix, modified the values and comments to make sense
+//All the comments with references to chambers were made by AI
+//I manually entered all the values for the terrain
+var g_map = [
+  // Top Row
+  // Row 0: Top border of map and top wall of the first row of chambers
+  [1, 2, 3, 3, 2, 2, 2, 3,  1, 1, 2, 2, 3, 3, 2, 1,  1, 2, 2, 2, 1, 2, 3, 3,  3, 3, 2, 1, 1, 1, 1, 1],
+  // Rows 1-6: Top Left of the Border
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 0, 1, 1, 0,  2, 1, 1, 1, 1, 0, 0, 0,  1, 3, 3, 2, 2, 1, 0, 1],
+  [1, 1, 2, 2, 1, 0, 0, 0,  0, 0, 2, 2, 2, 2, 0, 0,  0, 1, 0, 0, 1, 0, 0, 0,  0, 1, 2, 0, 0, 0, 0, 1],
+  [1, 0, 2, 0, 3, 3, 0, 0,  0, 1, 1, 3, 3, 3, 0, 0,  0, 0, 1, 0, 0, 1, 0, 0,  1, 2, 3, 0, 0, 0, 0, 1],
+  [1, 0, 2, 0, 2, 2, 2, 0,  0, 0, 3, 3, 2, 2, 0, 0,  0, 0, 0, 1, 1, 0, 0, 0,  1, 1, 3, 1, 0, 0, 0, 1],
+  [1, 0, 1, 3, 0, 3, 3, 0,  0, 0, 1, 2, 2, 0, 0, 0,  0, 1, 1, 1, 0, 0, 0, 0,  0, 1, 1, 2, 0, 0, 0, 1],
+  [1, 0, 0, 2, 2, 2, 0, 0,  0, 3, 3, 3, 0, 0, 0, 0,  0, 2, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  // Row 7: Solid Vertical wall in the middle
+  [1, 1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1,  0, 0, 0, 0, 0, 1, 1, 1], // ADJUSTED
 
-var g_map=[
-  [1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 1, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 1, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
+  // --- Second Row of Chambers (Rows 8-15) ---
+  // Row 8: Solid horizontal wall.
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 0, 0, 0, 0, 1],
+  [1, 0, 2, 0, 0, 0, 0, 0,  0, 2, 2, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 2, 3, 1, 0, 0, 1],
+  [1, 0, 0, 2, 0, 0, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0,  0, 0, 0, 1, 1, 0, 0, 0,  0, 0, 1, 3, 3, 1, 0, 1],
+  [1, 0, 0, 1, 2, 0, 0, 0,  0, 0, 2, 0, 0, 0, 0, 0,  0, 0, 1, 2, 3, 1, 0, 0,  0, 0, 1, 2, 2, 1, 1, 1],
+  [1, 2, 0, 0, 1, 3, 0, 0,  0, 0, 0, 2, 0, 0, 0, 0,  0, 0, 0, 1, 3, 1, 0, 0,  0, 0, 0, 1, 2, 0, 0, 1],
+  [1, 2, 2, 0, 0, 1, 3, 0,  0, 0, 0, 0, 2, 0, 0, 0,  0, 0, 0, 0, 1, 2, 2, 0,  0, 0, 1, 1, 2, 3, 0, 1],
+  [1, 3, 3, 0, 0, 0, 1, 3,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 1, 1, 1,  0, 0, 1, 1, 3, 2, 2, 1],
+  // Row 15: Solid Vertical wall in the middle
+  [1, 1, 0, 0, 1, 1, 1, 2,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1, 3, 2, 1, 1], // ADJUSTED
+
+  // --- Third Row of Chambers (Rows 16-23) ---
+  // Row 16: Solid horizontal wall.
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 1, 1, 1,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 2, 0, 0, 0, 0, 0,  1, 3, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 0, 0, 0, 0,  1, 1, 0, 0, 0, 0, 0, 1],
+  [1, 0, 2, 2, 0, 0, 0, 0,  0, 1, 3, 1, 1, 1, 0, 0,  0, 1, 1, 0, 1, 0, 0, 1,  2, 3, 1, 0, 0, 0, 0, 1],
+  [1, 2, 1, 1, 0, 0, 0, 0,  0, 0, 1, 3, 2, 2, 2, 2,  1, 3, 3, 1, 0, 2, 0, 0,  1, 2, 3, 1, 0, 0, 0, 1],
+  [1, 0, 2, 1, 3, 2, 2, 0,  0, 0, 0, 1, 1, 1, 1, 1,  2, 3, 3, 1, 0, 0, 2, 0,  1, 2, 2, 2, 1, 0, 0, 1],
+  [1, 0, 0, 0, 1, 3, 3, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 1, 3, 1, 0, 0, 0, 0,  0, 1, 1, 2, 1, 1, 0, 1],
+  // Row 23: Solid Vertical wall in the middle
+  [1, 2, 2, 3, 3, 3, 2, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 1, 1, 1], 
+
+  // --- Fourth Row of Chambers (Rows 24-31) ---
+  // Row 24: Solid horizontal wall.
+  [1, 0, 2, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 2, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 3, 1, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 2, 3, 3, 1, 1, 1,  1, 1, 1, 0, 0, 0, 0, 1],
+  [1, 3, 3, 1, 0, 0, 0, 0,  0, 1, 0, 0, 1, 1, 0, 0,  1, 1, 2, 2, 2, 2, 2, 2,  2, 2, 2, 1, 0, 0, 0, 1],
+  [1, 0, 3, 3, 1, 0, 0, 0,  0, 1, 2, 2, 1, 0, 0, 0,  0, 0, 0, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 2, 2, 1, 0, 0,  0, 0, 1, 2, 2, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 1, 0, 0,  0, 0, 0, 1, 2, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  2, 0, 0, 0, 0, 0, 0, 1],
+  // Row 31: Solid Vertical wall on the edge
+  [2, 2, 2, 1, 1, 3, 3, 3,  1, 2, 2, 3, 3, 2, 1, 1,  2, 3, 3, 2, 2, 1, 1, 1,  1, 1, 1, 2, 2, 3, 3, 1],
 ];
-
 
 
 var g_eye = [0,0,3];
@@ -293,13 +345,30 @@ function renderScene(){
   gl.clear(gl.COLOR_BUFFER_BIT);
   
   //Generating the map
-  for(x=0;x<8;x++){
-    for(y=0;y<8;y++){
+  for(x=0;x<32;x++){
+    for(y=0;y<32;y++){
       if(g_map[x][y]==1){
         var body = new Cube();
         body.color = [1,1,1,1];
-        body.textureNum = 1;
-        body.matrix.translate(x-4, -.95, y-4);
+        body.textureNum = 0;
+        body.matrix.scale(.3,.3,.3);
+        body.matrix.translate(x-16, 0, y-16);
+        body.render();
+      }
+      if(g_map[x][y]==2){
+        var body = new Cube();
+        body.color = [1,1,1,1];
+        body.textureNum = 2;
+        body.matrix.scale(.3,.6,.3);
+        body.matrix.translate(x-16, 0, y-16);
+        body.render();
+      }
+      if(g_map[x][y]==3){
+        var body = new Cube();
+        body.color = [1,1,1,1];
+        body.textureNum = 0;
+        body.matrix.scale(.3,.9,.3);
+        body.matrix.translate(x-16, 0, y-16);
         body.render();
       }
     }
@@ -317,23 +386,44 @@ function renderScene(){
 
   //floor cube 
   var floor = new Cube();
-  floor.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
-  floor.textureNum = 0;
-  floor.matrix.translate(0, -.85, 0);
-  floor.matrix.scale(10,0,10);
+  floor.color = [51/255, 51/255, 51/255,1]; // have to divide by 255 to scale correctly
+  floor.textureNum = 1;
+  floor.matrix.translate(0, 0, 0);
+  floor.matrix.scale(9,0,9);
   floor.matrix.translate(-.5, -1.8, -.5);
   floor.render();
 
+
+  // Generating Hyrax 1
   var hyraxMatrix1 = new Matrix4();
-  //hyraxMatrix1.scale(.5,.5,.5);
+  hyraxMatrix1.scale(.5,.5,.5);
+  hyraxMatrix1.translate(-2,.15,-1);
+  hyraxMatrix1.rotate(135, 0, 1, 0);
+
+  // Generating Hyrax 2 
+  var hyraxMatrix2 = new Matrix4();
+  hyraxMatrix2.scale(.5,.5,.5);
+  hyraxMatrix2.translate(8,.15,8);
+  hyraxMatrix2.rotate(-45, 0, 1, 0);
   
+  // Generating Hyrax 3
+  var hyraxMatrix3 = new Matrix4();
+  hyraxMatrix3.scale(.5,.5,.5);
+  hyraxMatrix3.translate(-8,.15,4.5);
+  hyraxMatrix3.rotate(180, 0, 1, 0);
+
+  // Generating Hyrax 4
+  var hyraxMatrix4 = new Matrix4();
+  hyraxMatrix4.scale(.5,.5,.5);
+  hyraxMatrix4.translate(7.8, .15, -5.25);
+  //hyraxMatrix4.rotate(180, 0, 1, 0);
 
   //hyrax1 body 
   var body = new Cube();
   body.matrix= new Matrix4(hyraxMatrix1);
   body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
   body.textureNum = -2;
-  body.matrix.translate(-.175, -.68, 0);
+  body.matrix.translate(-.175, 0, 0);
   body.matrix.rotate(0, 0, 1, 0);
   body.matrix.scale(1,.48,.5);
   body.render();
@@ -509,6 +599,550 @@ function renderScene(){
   tongue.render();
   
 
+  // HYRAX 2 
+  //hyrax2 body 
+  var body = new Cube();
+  body.matrix= new Matrix4(hyraxMatrix2);
+  body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  body.textureNum = -2;
+  body.matrix.translate(-.175, 0, 0);
+  body.matrix.rotate(0, 0, 1, 0);
+  body.matrix.scale(1,.48,.5);
+  body.render();
+
+  //hyrax back
+  var back = new Cube();
+  back.matrix = new Matrix4(body.matrix); 
+  back.color = [38/255, 27/255, 13/255,1];// have to divide by 255 to scale correctly
+  back.matrix.translate(.165, 0, 0);
+  back.matrix.rotate(0, 1, 0, 0);
+  back.matrix.scale(.75, 1.1, 1);
+  back.render();
+
+  //hyrax left front foot
+  var lfFoot = new Cube();
+  lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lfFoot.matrix = new Matrix4(body.matrix); 
+  lfFoot.matrix.translate(.05, -.3, 0.01);
+  lfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lfFoot.matrix.scale(.175,.5,.35);
+  lfFoot.render();
+
+  //hyrax right front foot
+  var rfFoot = new Cube();
+  rfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rfFoot.matrix = new Matrix4(body.matrix); 
+  rfFoot.matrix.translate(.05, -.3, .64);
+  rfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rfFoot.matrix.scale(.175,.5,.35);
+  rfFoot.render();
+
+
+  //hyrax left back foot
+  var lbFoot = new Cube();
+  lbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lbFoot.matrix = new Matrix4(body.matrix); 
+  lbFoot.matrix.translate(.76, -.3, 0.01);
+  lbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lbFoot.matrix.scale(.175,.5,.35);
+  lbFoot.render();
+
+  //hyrax right back foot
+  var rbFoot = new Cube();
+  rbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rbFoot.matrix = new Matrix4(body.matrix); 
+  rbFoot.matrix.translate(.76, -.3, .64);
+  rbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rbFoot.matrix.scale(.175,.5,.35);
+  rbFoot.render();
+
+  // Head of the Hyrax
+  //head
+  var head = new Cube();
+  head.matrix = new Matrix4(body.matrix); 
+  head.color = [48/255, 34/255,17/255,1];
+  //head.matrix.setTranslate(-.3, -.49, 0);
+  head.matrix.rotate(g_yellowAngle, 0, 0, 1);
+  var yellowCoordinatesMat = new Matrix4(head.matrix);
+  head.matrix.scale(.35,.75,.9);
+  head.matrix.translate(-.8, .34, 0.01);
+  head.render();
+
+  //above head box
+  var abHeadbox = new Cube();
+  abHeadbox.color = [48/255, 34/255,17/255,1];
+  abHeadbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abHeadbox.matrix.rotate(0, 0, 0, 1);
+  abHeadbox.matrix.scale(1.25,.175,1);
+  abHeadbox.matrix.translate(-.2, 5.7, 0.01);
+  abHeadbox.render();
+
+  //left ear on head box
+  var leftear = new Cube();
+  leftear.color = [38/255, 27/255, 13/255,1];
+  leftear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  leftear.matrix.scale(.3,.3,.28);
+  leftear.matrix.translate(2.4, 3.5, -0.1);
+  leftear.render();
+
+  //right ear on head box
+  var rightear = new Cube();
+  rightear.color = [38/255, 27/255, 13/255,1];
+  rightear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  rightear.matrix.scale(.3,.3,.28);
+  rightear.matrix.translate(2.4, 3.5, 2.7);
+  rightear.render();
+
+  //above jaw box
+  var abJawBox = new Cube();
+  abJawBox.color = [48/255, 34/255,17/255,1];
+  abJawBox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abJawBox.matrix.rotate(0, 0, 0, 1);
+  abJawBox.matrix.scale(.61,.45,1);
+  abJawBox.matrix.translate(-1, .57, 0.01);
+  abJawBox.render();
+
+  //nose box
+  var nosebox = new Cube();
+  nosebox.color = [31/255, 22/255,11/255,1];
+  nosebox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nosebox.matrix.rotate(0, 0, 0, 1);
+  nosebox.matrix.scale(.6,.42,.45);
+  nosebox.matrix.translate(-1, 1, .65);
+  nosebox.render();
+
+  //nose
+  var nose = new Cube();
+  nose.color = [0,0,0,1];
+  nose.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nose.matrix.rotate(0, 0, 0, 1);
+  nose.matrix.scale(.6,.44,.42);
+  nose.matrix.translate(-1.1, .8, .73);
+  nose.render();
+
+  //left eye
+  var lefteye = new Cube();
+  lefteye.color = [0,0,0,1];
+  lefteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  lefteye.matrix.rotate(0, 0, 0, 1);
+  lefteye.matrix.scale(.3,.3,.28);
+  lefteye.matrix.translate(-1, 2.34, 0);
+  lefteye.render();
+
+  //right eye
+  var righteye = new Cube();
+  righteye.color = [0,0,0,1];
+  righteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  righteye.matrix.rotate(0, 0, 0, 1);
+  righteye.matrix.scale(.3,.3,.28);
+  righteye.matrix.translate(-1, 2.34, 2.7);
+  righteye.render();
+
+  //left tooth
+  var leftTooth = new Cube();
+  leftTooth.color = [1,1,1,1];
+  leftTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftTooth.matrix.rotate(0, 0, 0, 1);
+  leftTooth.matrix.scale(.1,.3,.1);
+  leftTooth.matrix.translate(-6, .4, 3);
+  leftTooth.render();
+
+  //right tooth
+  var rightTooth = new Cube();
+  rightTooth.color = [1,1,1,1];
+  rightTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightTooth.matrix.rotate(0, 0, 0, 1);
+  rightTooth.matrix.scale(.1,.3,.1);
+  rightTooth.matrix.translate(-6, .4, 6.2);
+  rightTooth.render();
+
+  //Attached to head box
+  //jaw box
+  var jaw = new Cube();
+  jaw.color = [48/255, 34/255,17/255,1];
+  jaw.matrix = new Matrix4(head.matrix); ;
+  jaw.matrix.translate(0,0,0);
+  jaw.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  jaw.matrix.scale(1,.24,1);
+  jaw.matrix.translate(-.62, 0, 0.01);
+  jaw.render();
+
+  //Tertiary attach to the jaw
+  //tongue box
+  var tongue = new Cube();
+  tongue.color = [189/255, 83/255, 69/255, 1];
+  tongue.matrix = new Matrix4(jaw.matrix); //attaching to the jaw
+  jaw.matrix.translate(0,0,0);
+  tongue.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  tongue.matrix.scale(.8,.2,.8);
+  tongue.matrix.translate(.1, 4, .1);
+  tongue.render();
+
+
+  // HYRAX 3 
+  //hyrax3 body 
+  var body = new Cube();
+  body.matrix= new Matrix4(hyraxMatrix3);
+  body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  body.textureNum = -2;
+  body.matrix.translate(-.175, 0, 0);
+  body.matrix.rotate(0, 0, 1, 0);
+  body.matrix.scale(1,.48,.5);
+  body.render();
+
+  //hyrax back
+  var back = new Cube();
+  back.matrix = new Matrix4(body.matrix); 
+  back.color = [38/255, 27/255, 13/255,1];// have to divide by 255 to scale correctly
+  back.matrix.translate(.165, 0, 0);
+  back.matrix.rotate(0, 1, 0, 0);
+  back.matrix.scale(.75, 1.1, 1);
+  back.render();
+
+  //hyrax left front foot
+  var lfFoot = new Cube();
+  lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lfFoot.matrix = new Matrix4(body.matrix); 
+  lfFoot.matrix.translate(.05, -.3, 0.01);
+  lfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lfFoot.matrix.scale(.175,.5,.35);
+  lfFoot.render();
+
+  //hyrax right front foot
+  var rfFoot = new Cube();
+  rfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rfFoot.matrix = new Matrix4(body.matrix); 
+  rfFoot.matrix.translate(.05, -.3, .64);
+  rfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rfFoot.matrix.scale(.175,.5,.35);
+  rfFoot.render();
+
+
+  //hyrax left back foot
+  var lbFoot = new Cube();
+  lbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lbFoot.matrix = new Matrix4(body.matrix); 
+  lbFoot.matrix.translate(.76, -.3, 0.01);
+  lbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lbFoot.matrix.scale(.175,.5,.35);
+  lbFoot.render();
+
+  //hyrax right back foot
+  var rbFoot = new Cube();
+  rbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rbFoot.matrix = new Matrix4(body.matrix); 
+  rbFoot.matrix.translate(.76, -.3, .64);
+  rbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rbFoot.matrix.scale(.175,.5,.35);
+  rbFoot.render();
+
+  // Head of the Hyrax
+  //head
+  var head = new Cube();
+  head.matrix = new Matrix4(body.matrix); 
+  head.color = [48/255, 34/255,17/255,1];
+  //head.matrix.setTranslate(-.3, -.49, 0);
+  head.matrix.rotate(g_yellowAngle, 0, 0, 1);
+  var yellowCoordinatesMat = new Matrix4(head.matrix);
+  head.matrix.scale(.35,.75,.9);
+  head.matrix.translate(-.8, .34, 0.01);
+  head.render();
+
+  //above head box
+  var abHeadbox = new Cube();
+  abHeadbox.color = [48/255, 34/255,17/255,1];
+  abHeadbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abHeadbox.matrix.rotate(0, 0, 0, 1);
+  abHeadbox.matrix.scale(1.25,.175,1);
+  abHeadbox.matrix.translate(-.2, 5.7, 0.01);
+  abHeadbox.render();
+
+  //left ear on head box
+  var leftear = new Cube();
+  leftear.color = [38/255, 27/255, 13/255,1];
+  leftear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  leftear.matrix.scale(.3,.3,.28);
+  leftear.matrix.translate(2.4, 3.5, -0.1);
+  leftear.render();
+
+  //right ear on head box
+  var rightear = new Cube();
+  rightear.color = [38/255, 27/255, 13/255,1];
+  rightear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  rightear.matrix.scale(.3,.3,.28);
+  rightear.matrix.translate(2.4, 3.5, 2.7);
+  rightear.render();
+
+  //above jaw box
+  var abJawBox = new Cube();
+  abJawBox.color = [48/255, 34/255,17/255,1];
+  abJawBox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abJawBox.matrix.rotate(0, 0, 0, 1);
+  abJawBox.matrix.scale(.61,.45,1);
+  abJawBox.matrix.translate(-1, .57, 0.01);
+  abJawBox.render();
+
+  //nose box
+  var nosebox = new Cube();
+  nosebox.color = [31/255, 22/255,11/255,1];
+  nosebox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nosebox.matrix.rotate(0, 0, 0, 1);
+  nosebox.matrix.scale(.6,.42,.45);
+  nosebox.matrix.translate(-1, 1, .65);
+  nosebox.render();
+
+  //nose
+  var nose = new Cube();
+  nose.color = [0,0,0,1];
+  nose.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nose.matrix.rotate(0, 0, 0, 1);
+  nose.matrix.scale(.6,.44,.42);
+  nose.matrix.translate(-1.1, .8, .73);
+  nose.render();
+
+  //left eye
+  var lefteye = new Cube();
+  lefteye.color = [0,0,0,1];
+  lefteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  lefteye.matrix.rotate(0, 0, 0, 1);
+  lefteye.matrix.scale(.3,.3,.28);
+  lefteye.matrix.translate(-1, 2.34, 0);
+  lefteye.render();
+
+  //right eye
+  var righteye = new Cube();
+  righteye.color = [0,0,0,1];
+  righteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  righteye.matrix.rotate(0, 0, 0, 1);
+  righteye.matrix.scale(.3,.3,.28);
+  righteye.matrix.translate(-1, 2.34, 2.7);
+  righteye.render();
+
+  //left tooth
+  var leftTooth = new Cube();
+  leftTooth.color = [1,1,1,1];
+  leftTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftTooth.matrix.rotate(0, 0, 0, 1);
+  leftTooth.matrix.scale(.1,.3,.1);
+  leftTooth.matrix.translate(-6, .4, 3);
+  leftTooth.render();
+
+  //right tooth
+  var rightTooth = new Cube();
+  rightTooth.color = [1,1,1,1];
+  rightTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightTooth.matrix.rotate(0, 0, 0, 1);
+  rightTooth.matrix.scale(.1,.3,.1);
+  rightTooth.matrix.translate(-6, .4, 6.2);
+  rightTooth.render();
+
+  //Attached to head box
+  //jaw box
+  var jaw = new Cube();
+  jaw.color = [48/255, 34/255,17/255,1];
+  jaw.matrix = new Matrix4(head.matrix); ;
+  jaw.matrix.translate(0,0,0);
+  jaw.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  jaw.matrix.scale(1,.24,1);
+  jaw.matrix.translate(-.62, 0, 0.01);
+  jaw.render();
+
+  //Tertiary attach to the jaw
+  //tongue box
+  var tongue = new Cube();
+  tongue.color = [189/255, 83/255, 69/255, 1];
+  tongue.matrix = new Matrix4(jaw.matrix); //attaching to the jaw
+  jaw.matrix.translate(0,0,0);
+  tongue.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  tongue.matrix.scale(.8,.2,.8);
+  tongue.matrix.translate(.1, 4, .1);
+  tongue.render();
+
+  
+  // HYRAX 4 
+  //hyrax4 body 
+  var body = new Cube();
+  body.matrix= new Matrix4(hyraxMatrix4);
+  body.color = [38/255, 27/255, 13/255,1]; // have to divide by 255 to scale correctly
+  body.textureNum = -2;
+  body.matrix.translate(-.175, 0, 0);
+  body.matrix.rotate(0, 0, 1, 0);
+  body.matrix.scale(1,.48,.5);
+  body.render();
+
+  //hyrax back
+  var back = new Cube();
+  back.matrix = new Matrix4(body.matrix); 
+  back.color = [38/255, 27/255, 13/255,1];// have to divide by 255 to scale correctly
+  back.matrix.translate(.165, 0, 0);
+  back.matrix.rotate(0, 1, 0, 0);
+  back.matrix.scale(.75, 1.1, 1);
+  back.render();
+
+  //hyrax left front foot
+  var lfFoot = new Cube();
+  lfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lfFoot.matrix = new Matrix4(body.matrix); 
+  lfFoot.matrix.translate(.05, -.3, 0.01);
+  lfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lfFoot.matrix.scale(.175,.5,.35);
+  lfFoot.render();
+
+  //hyrax right front foot
+  var rfFoot = new Cube();
+  rfFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rfFoot.matrix = new Matrix4(body.matrix); 
+  rfFoot.matrix.translate(.05, -.3, .64);
+  rfFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rfFoot.matrix.scale(.175,.5,.35);
+  rfFoot.render();
+
+
+  //hyrax left back foot
+  var lbFoot = new Cube();
+  lbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  lbFoot.matrix = new Matrix4(body.matrix); 
+  lbFoot.matrix.translate(.76, -.3, 0.01);
+  lbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  lbFoot.matrix.scale(.175,.5,.35);
+  lbFoot.render();
+
+  //hyrax right back foot
+  var rbFoot = new Cube();
+  rbFoot.color = [31/255, 22/255, 10/255,1];// have to divide by 255 to scale correctly
+  rbFoot.matrix = new Matrix4(body.matrix); 
+  rbFoot.matrix.translate(.76, -.3, .64);
+  rbFoot.matrix.rotate(g_legAngle, 0, 0, 1);
+  rbFoot.matrix.scale(.175,.5,.35);
+  rbFoot.render();
+
+  // Head of the Hyrax
+  //head
+  var head = new Cube();
+  head.matrix = new Matrix4(body.matrix); 
+  head.color = [48/255, 34/255,17/255,1];
+  //head.matrix.setTranslate(-.3, -.49, 0);
+  head.matrix.rotate(g_yellowAngle, 0, 0, 1);
+  var yellowCoordinatesMat = new Matrix4(head.matrix);
+  head.matrix.scale(.35,.75,.9);
+  head.matrix.translate(-.8, .34, 0.01);
+  head.render();
+
+  //above head box
+  var abHeadbox = new Cube();
+  abHeadbox.color = [48/255, 34/255,17/255,1];
+  abHeadbox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abHeadbox.matrix.rotate(0, 0, 0, 1);
+  abHeadbox.matrix.scale(1.25,.175,1);
+  abHeadbox.matrix.translate(-.2, 5.7, 0.01);
+  abHeadbox.render();
+
+  //left ear on head box
+  var leftear = new Cube();
+  leftear.color = [38/255, 27/255, 13/255,1];
+  leftear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  leftear.matrix.scale(.3,.3,.28);
+  leftear.matrix.translate(2.4, 3.5, -0.1);
+  leftear.render();
+
+  //right ear on head box
+  var rightear = new Cube();
+  rightear.color = [38/255, 27/255, 13/255,1];
+  rightear.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightear.matrix.rotate(-.25*g_legAngle, 0, 0, 1);
+  rightear.matrix.scale(.3,.3,.28);
+  rightear.matrix.translate(2.4, 3.5, 2.7);
+  rightear.render();
+
+  //above jaw box
+  var abJawBox = new Cube();
+  abJawBox.color = [48/255, 34/255,17/255,1];
+  abJawBox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  abJawBox.matrix.rotate(0, 0, 0, 1);
+  abJawBox.matrix.scale(.61,.45,1);
+  abJawBox.matrix.translate(-1, .57, 0.01);
+  abJawBox.render();
+
+  //nose box
+  var nosebox = new Cube();
+  nosebox.color = [31/255, 22/255,11/255,1];
+  nosebox.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nosebox.matrix.rotate(0, 0, 0, 1);
+  nosebox.matrix.scale(.6,.42,.45);
+  nosebox.matrix.translate(-1, 1, .65);
+  nosebox.render();
+
+  //nose
+  var nose = new Cube();
+  nose.color = [0,0,0,1];
+  nose.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  nose.matrix.rotate(0, 0, 0, 1);
+  nose.matrix.scale(.6,.44,.42);
+  nose.matrix.translate(-1.1, .8, .73);
+  nose.render();
+
+  //left eye
+  var lefteye = new Cube();
+  lefteye.color = [0,0,0,1];
+  lefteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  lefteye.matrix.rotate(0, 0, 0, 1);
+  lefteye.matrix.scale(.3,.3,.28);
+  lefteye.matrix.translate(-1, 2.34, 0);
+  lefteye.render();
+
+  //right eye
+  var righteye = new Cube();
+  righteye.color = [0,0,0,1];
+  righteye.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  righteye.matrix.rotate(0, 0, 0, 1);
+  righteye.matrix.scale(.3,.3,.28);
+  righteye.matrix.translate(-1, 2.34, 2.7);
+  righteye.render();
+
+  //left tooth
+  var leftTooth = new Cube();
+  leftTooth.color = [1,1,1,1];
+  leftTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  leftTooth.matrix.rotate(0, 0, 0, 1);
+  leftTooth.matrix.scale(.1,.3,.1);
+  leftTooth.matrix.translate(-6, .4, 3);
+  leftTooth.render();
+
+  //right tooth
+  var rightTooth = new Cube();
+  rightTooth.color = [1,1,1,1];
+  rightTooth.matrix = new Matrix4(head.matrix); //for some reason yellowCoordinatesMat was sticking to jaw
+  rightTooth.matrix.rotate(0, 0, 0, 1);
+  rightTooth.matrix.scale(.1,.3,.1);
+  rightTooth.matrix.translate(-6, .4, 6.2);
+  rightTooth.render();
+
+  //Attached to head box
+  //jaw box
+  var jaw = new Cube();
+  jaw.color = [48/255, 34/255,17/255,1];
+  jaw.matrix = new Matrix4(head.matrix); ;
+  jaw.matrix.translate(0,0,0);
+  jaw.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  jaw.matrix.scale(1,.24,1);
+  jaw.matrix.translate(-.62, 0, 0.01);
+  jaw.render();
+
+  //Tertiary attach to the jaw
+  //tongue box
+  var tongue = new Cube();
+  tongue.color = [189/255, 83/255, 69/255, 1];
+  tongue.matrix = new Matrix4(jaw.matrix); //attaching to the jaw
+  jaw.matrix.translate(0,0,0);
+  tongue.matrix.rotate(g_purpleAngle, 0, 0, 1);
+  tongue.matrix.scale(.8,.2,.8);
+  tongue.matrix.translate(.1, 4, .1);
+  tongue.render();
   var duration=performance.now()-startTime;
   sendTextToHTML(( " ms: "+ Math.floor(duration) +" fps: " +Math.floor(10000/duration)) , "numdot");
 }
@@ -578,32 +1212,70 @@ function keydown(ev){
 }
 
 function initTextures(){
-  var image= new Image();
-  if(!image){
+
+  var image0= new Image();
+  var image1= new Image();
+  var image2= new Image();
+  if(!image0 || !image1 || !image2){
     console.log('Failed to create the image object');
     return false;
   }
-  image.onload=function(){ sendTextureToTEXTURE0(image);};
-  image.src='./images/rck_3.png';
 
-  
+  image0.onload=function(){ sendTextureToTEXTURE0(image0);};
+  image1.onload=function(){ sendTextureToTEXTURE1(image1);};
+  image2.onload=function(){ sendTextureToTEXTURE2(image2);};
+  image0.src='./images/Tileable1k.png'; //Rock1 Texture
+  image1.src='./images/Stone_03-512x512.png'; // Floor Texture
+  image2.src='./images/Stone_13-512x512.png'; // Rock2 Texture
+
   return true;
 }
 
 function sendTextureToTEXTURE0(image){
   //creates the actual texture that connects to our gl object
-  var texture=gl.createTexture();
-  if(!texture){
+  var texture0=gl.createTexture();
+  if(!texture0){
     console.log('Failed to create the texture object');
     return false;
   }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip image y axis
   gl.activeTexture(gl.TEXTURE0); //enable texture
-  gl.bindTexture(gl.TEXTURE_2D,texture); //bind texture object to target
+  gl.bindTexture(gl.TEXTURE_2D, texture0); //bind texture object to target
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //set texture parameters
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); //set texture image
   gl.uniform1i(u_Sampler0, 0); //u_Sampler0 is used
-  console.log("finished loadTexture");
+  console.log("finished loadTexture 0");
+}
+function sendTextureToTEXTURE1(image){
+  //creates the actual texture that connects to our gl object
+  var texture1=gl.createTexture();
+  if(!texture1){
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip image y axis
+  gl.activeTexture(gl.TEXTURE1); //enable texture1
+  gl.bindTexture(gl.TEXTURE_2D,texture1); //bind texture object to target
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //set texture parameters
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); //set texture image
+  gl.uniform1i(u_Sampler1, 1); //u_Sampler1 is used
+  console.log("finished loadTexture 1");
+}
+
+function sendTextureToTEXTURE2(image){
+  //creates the actual texture that connects to our gl object
+  var texture2=gl.createTexture();
+  if(!texture2){
+    console.log('Failed to create the texture object');
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip image y axis
+  gl.activeTexture(gl.TEXTURE2); //enable texture1
+  gl.bindTexture(gl.TEXTURE_2D,texture2); //bind texture object to target
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //set texture parameters
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image); //set texture image
+  gl.uniform1i(u_Sampler2, 2); //u_Sampler1 is used
+  console.log("finished loadTexture 2");
 }
 
 function main() {

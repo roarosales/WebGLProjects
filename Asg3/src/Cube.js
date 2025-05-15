@@ -12,7 +12,7 @@ class Cube{
         //var xy = this.position;
         var rgba = this.color;
         //var size= this.size;
-        gl.uniform1i(u_WhichTexture, this.textureNum); // no matter what value, it's ALWAYS 0
+        gl.uniform1i(u_WhichTexture, this.textureNum); 
         
         //console.log("u_WhichTexture is " + u_WhichTexture); //u_WhichTexture stays undefined
         // Pass the color of a point to u_FragColor variable
