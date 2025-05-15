@@ -1209,7 +1209,7 @@ function keydown(ev){
   else if(ev.keyCode==69){ // e key
     g_globalAngleX -= 5;
   }
-  else if(ev.keyCode==70){ // f key
+  else if(ev.keyCode==70){ // f key non-functional tho
     placeBlock();
   }
   renderScene();
@@ -1235,7 +1235,7 @@ function initTextures(){
 
   return true;
 }
-
+//this doesnt work lol
 function placeBlock(){
   var body = new Cube();
   body.color = [1,1,1,1];
@@ -1297,8 +1297,6 @@ function sendTextureToTEXTURE2(image){
 let camera;
 
 function main() {
-
-  
   setupWebGL();
   connectVariableToGLSL();
   addActionsForHTMLUI();

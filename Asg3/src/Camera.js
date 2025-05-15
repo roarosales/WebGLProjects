@@ -22,7 +22,6 @@ class Camera{
         f.set(this.at);
         f.sub(this.eye);
         f.normalize();
-
         f.mul(5);
 
         this.eye.add(f);
