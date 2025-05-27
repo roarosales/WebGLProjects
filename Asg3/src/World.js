@@ -242,7 +242,7 @@ var g_seconds = performance.now()/1000-g_startTime;
 
 function tick(){
   g_seconds = performance.now()/1000-g_startTime;
-  console.log(g_seconds);
+  //console.log(g_seconds);
 
   updateAnimationAngles();
   renderScene();
@@ -319,23 +319,25 @@ var g_map = [
 ];
 
 
-var g_eye = [0,1,3];
-var g_at = [0,0,-100];
-var g_up = [0,1,0];
+//var g_eye = [0,1,3];
+//var g_at = [0,0,-100];
+//var g_up = [0,1,0];
 
 //renderScene()
 function renderScene(){
   var startTime = performance.now();
 
   var projMat = new Matrix4();
-  projMat.setPerspective(50, canvas.width/canvas.height, 1, 100);
-  //gl.uniformMatrix4fv(u_ProjectionMatrix, false, camera.projectionMatrix.elements);
-  gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
+  //projMat.setPerspective(50, canvas.width/canvas.height, 1, 100);
+  gl.uniformMatrix4fv(u_ProjectionMatrix, false, camera.projectionMatrix.elements);
+  //gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
   var viewMat = new Matrix4();
-  viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
-  //gl.uniformMatrix4fv(u_ViewMatrix, false, camera.viewMatrix.elements);
-  gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
+  //viewMat.setLookAt(g_eye[0], g_eye[1], g_eye[2], g_at[0], g_at[1], g_at[2], g_up[0], g_up[1], g_up[2]);
+  gl.uniformMatrix4fv(u_ViewMatrix, false, camera.viewMatrix.elements);
+
+  //console.log(camera.viewMatrix.elements)
+  //gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
 
   var globalRotMat = new Matrix4().rotate(g_globalAngleX,0,1,0) //horizontal rotation
   globalRotMat.rotate(g_globalAngleY,1,0,0);
@@ -376,6 +378,7 @@ function renderScene(){
     }
   }
   
+  //#region stuff
   //sky box 
   var skybox = new Cube();
   skybox.color = [129/255, 192/255, 1, 1]; // have to divide by 255 to scale correctly
@@ -1145,6 +1148,7 @@ function renderScene(){
   tongue.matrix.scale(.8,.2,.8);
   tongue.matrix.translate(.1, 4, .1);
   tongue.render();
+  //#endregion
   var duration=performance.now()-startTime;
   sendTextToHTML(( " ms: "+ Math.floor(duration) +" fps: " +Math.floor(10000/duration)) , "numdot");
 }
@@ -1191,24 +1195,25 @@ function mouseMove(ev){
   g_globalAngleY = Math.max(minY, Math.min(y * 60, maxY)); //chatgpt generated this line for clamping the angles
 }
 
+
 function keydown(ev){
   if (ev.keyCode ==65){ // a key
-    g_eye[0] -=0.2;
+    camera.moveLeft();
   }
   else if(ev.keyCode==68){ // d key
-    g_eye[0] += 0.2;
+    camera.moveRight();
   }
   else if(ev.keyCode==87){ // w key
-    g_eye[2] -= 1;
+    camera.moveForward();
   }
   else if(ev.keyCode==83){ // s key
-    g_eye[2] += 1;
+    camera.moveBackward();
   }
   else if(ev.keyCode==81){ // q key
-    g_globalAngleX += 5;
+    g_globalAngleX -= 5;
   }
   else if(ev.keyCode==69){ // e key
-    g_globalAngleX -= 5;
+    g_globalAngleX += 5;
   }
   else if(ev.keyCode==70){ // f key non-functional tho
     placeBlock();

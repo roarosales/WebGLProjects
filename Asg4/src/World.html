@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hyrax Lab</title>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+    <p></p>
+
+    <p id="numdot"> Performance Stats</p>
+    <p></p>
+    Horizontal Camera Angle: <input type="range" min="-60" max="60" value="0" class="slider" id="angleSlideX">
+    Vertical Camera Angle: <input type="range" min="-10" max="60" value="0" class="slider" id="angleSlideY">
+    <p></p>
+    Head Slider: <input type="range" min="-5" max="5" value="0" class="slider" id="yellowSlide">
+    Awawa Slider: <input type="range" min="0" max="20" value="0" class="slider" id="purpleSlide">
+
+    <p></p>
+    Head Animation:
+    <button type="button" id="animationButtonOn" >On</button>
+    <button type="button" id="animationButtonOff" >Off</button>
+
+    Awawa Animation:
+    <button type="button" id="aniPurpleON" >On</button>
+    <button type="button" id="aniPurpleOFF" >Off</button>
+
+    Awawa Speed:<input type="range" min="5" max="20" value="5" class="slider" id="speedSlide">
+    <p></p>
+    Welcome to Hyrax Land!
+    <p></p>
+    The rock hyrax is a small animal native to rocky desert environments in Africa and the Middle East.
+    <p></p>
+    In this game you can explore their natural rocky habitat with a textured terrain of several rock formations!
+    <p></p>
+    Hyrax's are also well known for their "Awawa" screams, and so you can use the toggles above to control their "Awawa's"!
+    <p></p>
+    If you shift-click you'll disturb the Hyrax's and they'll all "Awawa" at you!
+    <p></p>
+    A fun fact about Hyrax's is that their closest living relatives are elephants and manatees! :D
+
+    <p></p>
+    <img src="./images/hyrax.jpg" alt="Hyrax">
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix-cse160.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="RightTriangle3D.js"></script>
+    <script src="World.js"></script>
+    <script src="Camera.js"></script>
+  </body>
+</html>
