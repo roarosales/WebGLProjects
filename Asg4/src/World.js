@@ -10,6 +10,7 @@ var VSHADER_SOURCE =
   'attribute vec3 a_Normal;\n' +
   'varying vec2 v_UV;\n'+
   'varying vec3 v_Normal;\n'+
+  'varying vec4 v_VertPos;\n'+
   'uniform mat4 u_ModelMatrix;\n'+
   'uniform mat4 u_GlobalRotateMatrix;'+
   'uniform mat4 u_ViewMatrix;\n'+
@@ -18,6 +19,7 @@ var VSHADER_SOURCE =
   ' gl_Position = u_ProjectionMatrix* u_ViewMatrix* u_GlobalRotateMatrix * u_ModelMatrix * a_Position;\n' +
   ' v_UV = a_UV;\n'+ 
   ' v_Normal = a_Normal;\n'+ 
+  ' v_VertPos = u_ModelMatrix * a_Position;\n'+ 
   '}\n';
 //tried cleaning up but VS Code would only let it work as a single line which is harder to read
 
@@ -26,18 +28,23 @@ var FSHADER_SOURCE =
   'precision mediump float;\n' +
   'varying vec2 v_UV;\n' +  
   'varying vec3 v_Normal;\n' + 
+  'uniform vec3 u_lightColor;\n' + 
   'uniform vec4 u_FragColor;\n' +  
   'uniform sampler2D u_Sampler0;\n' +  
   'uniform sampler2D u_Sampler1;\n' + 
   'uniform sampler2D u_Sampler2;\n' + 
-  'uniform int u_WhichTexture;\n' +  
+  'uniform int u_WhichTexture;\n' +
+  'uniform vec3 u_lightPos;\n' +
+  'uniform vec3 u_cameraPos;\n' +
+  'varying vec4 v_VertPos;\n' + 
+  'uniform bool u_lightOn;\n' + 
   'void main() {\n' +
   ' if(u_WhichTexture == -3){ \n' +
   '   gl_FragColor = vec4((v_Normal+1.0)/2.0, 1.0); \n' +
-  '}\n'+
+  ' }\n'+
   ' else if(u_WhichTexture == -2){ \n' +
   '   gl_FragColor = u_FragColor; \n' +
-  '}\n'+
+  ' }\n'+
   ' else if(u_WhichTexture == -1){ \n' +
   '   gl_FragColor = vec4(v_UV, 1.0,1.0); \n' +
   ' }\n'+
@@ -53,6 +60,38 @@ var FSHADER_SOURCE =
   ' else{ // puts reddish if error \n'+
   '   gl_FragColor = vec4(1,.2,.2,1);\n'+
   ' }\n'+
+  ' \n'+
+  ' vec3 lightVector = u_lightPos-vec3(v_VertPos);\n' + 
+  ' float r = length(lightVector);\n' + 
+  ' //visualizing red/green on stuff\n'+
+  ' //if (r<1.0){\n'+
+  ' //  gl_FragColor = vec4(1,0,0,1); \n'+
+  ' //}\n'+
+  ' //else if (r<2.0){\n'+
+  ' //  gl_FragColor = vec4(0,1,0,1);\n'+
+  ' //}\n'+
+  ' //gl_FragColor = vec4(vec3(gl_FragColor)/(r*r),1);\n'+
+  ' //N dot L code instead of the if statements\n'+
+  ' vec3 L = normalize(lightVector);\n'+
+  ' vec3 N = normalize(v_Normal);\n'+
+  ' float nDotL = max(dot(N,L), 0.0);\n'+
+  ' \n'+
+  ' vec3 R = reflect(-L, N); //reflection vector\n'+
+  ' vec3 E = normalize(u_cameraPos)-vec3(v_VertPos); // eye vector\n'+
+  ' \n'+
+  ' float specular = pow(max(dot(E,R),0.0), 10.0);\n'+
+  ' \n'+
+  ' vec3 diffuse = vec3(gl_FragColor) * nDotL * u_lightColor;\n'+
+  ' vec3 ambient = vec3(gl_FragColor) * 0.3;\n'+
+  ' //gl_FragColor = vec4(specular+diffuse+ambient, 1.0);\n'+
+  ' if(u_lightOn){\n'+
+  '   if(u_WhichTexture==0){\n'+
+  '     gl_FragColor = vec4(specular+diffuse+ambient, 1.0);\n'+
+  '   }\n'+
+  '   else{\n'+
+  '     gl_FragColor = vec4(diffuse+ambient, 1.0);\n'+
+  '   }\n'+
+  '  }\n'+
   '}\n';
 
 //Making global variables
@@ -75,6 +114,12 @@ let u_WhichTexture; // decides if texture or not
 let u_Sampler0;
 let u_Sampler1;
 let u_Sampler2;
+
+let u_lightPos;
+let u_cameraPos;
+let u_lightOn;
+
+let u_lightColor;
 
 //this stays the same for the rest of quarter
 function setupWebGL(){
@@ -155,10 +200,6 @@ function connectVariableToGLSL(){
     console.log('Failed to get the storage location of u_WhichTexture');
     return;
   }
-  //New storage locations in asg3
-  //Storage location of a_UV
-  
-
   
   
   //Storage location of first texture
@@ -179,6 +220,26 @@ function connectVariableToGLSL(){
     console.log('Failed to get the storage location of u_Sampler2');
     return;
   }
+  u_lightOn = gl.getUniformLocation(gl.program, 'u_lightOn');
+  if (!u_lightOn) {
+    console.log('Failed to get the storage location of u_lightOn');
+    return;
+  }
+  u_lightPos = gl.getUniformLocation(gl.program, 'u_lightPos');
+  if (!u_lightPos) {
+    console.log('Failed to get the storage location of u_lightPos');
+    return;
+  }
+  u_cameraPos = gl.getUniformLocation(gl.program, 'u_cameraPos');
+  if (!u_cameraPos) {
+    console.log('Failed to get the storage location of u_cameraPos');
+    return;
+  }
+  u_lightColor = gl.getUniformLocation(gl.program, 'u_lightColor');
+  if (!u_lightColor) {
+    console.log('Failed to get the storage location of u_lightColor');
+    return;
+  }
 
   //Storage location of size
   u_Size = gl.getUniformLocation(gl.program, 'u_Size');
@@ -187,8 +248,6 @@ function connectVariableToGLSL(){
     return;
   }
 
-  
-  
 
   var identityM = new Matrix4();
   gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
@@ -221,7 +280,13 @@ let g_awawaSpeed=5;
 
 var g_shapesList = []; //new list for points
 
+//stuck for asg 4
 let g_normalOn=false;
+let g_lightPos=[0,1,-2];
+let g_lightOn = true;
+let g_moveOn = true;
+
+let g_lightColor = [1,1,1];
 
 //var g_points = [];  // The array for the position of a mouse press
 //var g_colors = [];  // The array to store the color of a point
@@ -232,6 +297,20 @@ let g_normalOn=false;
 function addActionsForHTMLUI(){
   document.getElementById('normalOn').onclick = function() { g_normalOn = true; };
   document.getElementById('normalOff').onclick = function() { g_normalOn = false; };
+
+  document.getElementById('lightOn').onclick = function() { g_lightOn = true; };
+  document.getElementById('lightOff').onclick = function() { g_lightOn = false; };
+
+  document.getElementById('moveOn').onclick = function() { g_moveOn = true; };
+  document.getElementById('moveOff').onclick = function() { g_moveOn = false; };
+
+  document.getElementById('lightSlideX').addEventListener('mousemove', function(){ g_lightPos[0] = this.value/100; renderScene();});
+  document.getElementById('lightSlideY').addEventListener('mousemove', function(){ g_lightPos[1] = this.value/100; renderScene();});
+  document.getElementById('lightSlideZ').addEventListener('mousemove', function(){ g_lightPos[2] = this.value/100; renderScene();});
+
+  document.getElementById('lightColorR').addEventListener('mousemove', function(){ g_lightColor[0] = this.value/255; renderScene();});
+  document.getElementById('lightColorG').addEventListener('mousemove', function(){ g_lightColor[1] = this.value/255; renderScene();});
+  document.getElementById('lightColorB').addEventListener('mousemove', function(){ g_lightColor[2] = this.value/255; renderScene();});
 
   document.getElementById('angleSlideX').addEventListener('mousemove', function(){ g_globalAngleX = this.value; renderScene();});
   document.getElementById('angleSlideY').addEventListener('mousemove', function(){ g_globalAngleY = this.value; renderScene();});
@@ -284,20 +363,27 @@ function updateAnimationAngles(){
   if(g_legAngle){ //it checks itself and resets to 0
     g_legAngle = (-5 *Math.sin(g_awawaSpeed*g_seconds)); 
   }
+
+  if(g_moveOn){
+    g_lightPos[0]=-2.3*Math.cos(g_seconds);
+  }
+  //for the light moving on its own
+  
+
 }
 
 // I used Vertex AI to comment this matrix initially, but I created the matrix, modified the values and comments to make sense
 //All the comments with references to chambers were made by AI
 //I manually entered all the values for the terrain
 var g_map = [
-  [2, 2, 2, 2, 2, 2, 2, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [1, 0, 0, 0, 0, 0, 0, 2],
-  [2, 2, 2, 2, 2, 2, 2, 2],
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
 
@@ -340,30 +426,8 @@ function renderScene(){
         if (g_normalOn){
           body.textureNum = -3;
         }
-        body.matrix.scale(1,1,.5);
-        body.matrix.translate(x-4, 0, y-8);
-        body.render();
-
-        var body1 = new Cube();
-        body1.color = [1,1,1,1];
-        body1.textureNum = 2;
-        if (g_normalOn){
-          body1.textureNum = -3;
-        }
-        body1.matrix.scale(1,2,.5);
-        body1.matrix.translate(x-4, .5, y-8);
-        body1.render();
-      }
-      if(g_map[x][y]==2){ //inner walls 
-        var body = new Cube();
-        body.color = [1,1,1,1];
-        body.textureNum = 0;
-        if (g_normalOn){
-          body.textureNum = -3;
-        }
         body.matrix.scale(1,1,1);
-        body.matrix.translate(x-4, 0, y-3);
-        body.matrix.rotate(90, 0, 1, 0);
+        body.matrix.translate(x-4, 0, y-4);
         body.render();
 
         var body1 = new Cube();
@@ -373,10 +437,19 @@ function renderScene(){
           body1.textureNum = -3;
         }
         body1.matrix.scale(1,2,1);
-        body1.matrix.translate(x-4, .5, y-3);
-        body1.matrix.rotate(90, 0, 1, 0);
+        body1.matrix.translate(x-4, .5, y-4);
         body1.render();
-        
+      }
+      if(g_map[x][y]==2){ 
+        var body = new Cube();
+        body.color = [1,1,1,1];
+        body.textureNum = 0;
+        if (g_normalOn){
+          body.textureNum = -3;
+        }
+        body.matrix.scale(1,1,1);
+        body.matrix.translate(x-4, 0, y-3);
+        body.render();
       }
       if(g_map[x][y]==3){
         var body = new Cube();
@@ -420,7 +493,6 @@ function renderScene(){
 
   //sphere
   var round = new Sphere();
-  round.matrix = new Matrix4();
   round.color = [1, 0, 0,1];
   if (g_normalOn){
     round.textureNum = -3;
@@ -429,6 +501,24 @@ function renderScene(){
   round.matrix.translate(.5,1,-2.4);
   round.render();
 
+  //passing light position to glsl
+  gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
+
+  //passing camera position to glsl
+  gl.uniform3f(u_cameraPos, camera.eye.x, camera.eye.y, camera.eye.z);
+
+  //light colour
+  gl.uniform1i(u_lightOn, g_lightOn);
+
+  //passing the light colour
+  gl.uniform3f(u_lightColor, g_lightColor[0], g_lightColor[1], g_lightColor[2]);
+
+  //light cube
+  var light = new Cube();
+  light.color=[2,2,0,1];
+  light.matrix.translate(g_lightPos[0], g_lightPos[1], g_lightPos[2]);
+  light.matrix.scale(-.1,-.1,-.1);
+  light.render();
 
   //#region Hyrax
   // Generating Hyrax 1

@@ -25,7 +25,7 @@ class Cube{
 
 
         // I got the normals mostly from the video, but solved some
-        
+
         //Front of cube
         drawTriangle3DUVNormal([0,0,0, 1,1,0, 1,0,0], 
           [0,repVal, repVal,0, repVal, repVal],
@@ -56,11 +56,11 @@ class Cube{
         // Back of cube - AI Helped with these two lines below
         drawTriangle3DUVNormal([0,0,1, 1,0,1, 1,1,1], 
           [0,repVal, repVal,repVal, repVal,0],
-          [0,0,-1, 0,0,-1, 0,0,-1]);
+          [0,0,1, 0,0,1, 0,0,1]);
 
         drawTriangle3DUVNormal([0,0,1, 1,1,1, 0,1,1], 
           [0,repVal, repVal,0, 0,0],
-          [0,0,-1, 0,0,-1, 0,0,-1]);
+          [0,0,1, 0,0,1, 0,0,1]);
 
         //Right Side of cube - similar to previous stuff
         drawTriangle3DUVNormal([1,0,0, 1,1,0, 1,1,1], 
@@ -81,7 +81,7 @@ class Cube{
           [-1,0,0, -1,0,0, -1,0,0]);
 
         //shown in the yt tutorial vids
-        gl.uniform4f(u_FragColor, rgba[0]*.9, rgba[1]*.9, rgba[2]*.9, rgba[3]);
+        //gl.uniform4f(u_FragColor, rgba[0]*.9, rgba[1]*.9, rgba[2]*.9, rgba[3]);
 
 
     }
