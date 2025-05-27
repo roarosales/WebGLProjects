@@ -390,8 +390,8 @@ var g_map = [
 //var g_eye = [0,1,3];
 //var g_at = [0,0,-100];
 //var g_up = [0,1,0];
-
 //renderScene()
+
 function renderScene(){
   var startTime = performance.now();
 
@@ -490,6 +490,25 @@ function renderScene(){
   floor.matrix.scale(8,0,8);
   floor.matrix.translate(-.5, -1.8, -.5);
   floor.render();
+
+
+  var floorCube = new Cube();
+  floorCube.textureNum = 0;
+  if (g_normalOn){
+    floorCube.textureNum = -3;
+  }
+  floorCube.matrix.translate(1.75, 0, -1.5);
+  floorCube.matrix.scale(.5,.5,.5);
+  floorCube.render();
+
+  //trying to get a obj to load in 
+  /*
+  var teapot = new Model("teapot.obj");
+  teapot.color = [0,0,1,1];
+  teapot.matrix.setScale(.5,.5,.5);
+  teapot.matrix.rotate(240,0,1,0);
+  teapot.render();
+  */
 
   //sphere
   var round = new Sphere();
@@ -852,7 +871,7 @@ function initTextures(){
   image0.src='./images/Stone_13-512x512.png'; //Wall1 Texture
   image1.src='./images/Tile_04-512x512.png'; // Floor Texture
   image2.src='./images/Stone_08-512x512.png'; // Stone Texture
-
+  // used these textures https://opengameart.org/content/117-stone-wall-tilable-textures-in-8-themes
   return true;
 }
 
