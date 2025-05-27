@@ -1,8 +1,8 @@
 class Camera{
     constructor(){
         this.fov = 60;
-        this.eye = new Vector3([0,.25,3]);
-        this.at = new Vector3([0,0,-100]);
+        this.eye = new Vector3([0,1.5,3]);
+        this.at = new Vector3([0,2,-80]);
         this.up = new Vector3([0,1,0]);
 
         this.viewMatrix = new Matrix4();
@@ -23,7 +23,7 @@ class Camera{
         f.set(this.at);
         f.sub(this.eye);
         f.normalize();
-        f.mul(.25);
+        f.mul(.101);
         this.eye.add(f);
         this.at.add(f);
         //console.log(this.eye.elements, this.at.elements)
@@ -41,7 +41,7 @@ class Camera{
         f.set(this.at);
         f.sub(this.eye);
         f.normalize();
-        f.mul(.1);
+        f.mul(.101);
         this.eye.sub(f); // sub instead to go backwards
         this.at.sub(f);
         //console.log(this.eye.elements, this.at.elements)
@@ -62,7 +62,7 @@ class Camera{
 
         f = Vector3.cross(f,this.up); //claude ai generated this line of code and explained the concept 
         f.normalize();
-        f.mul(.1);
+        f.mul(.101);
 
         this.eye.sub(f); // sub instead to go backwards
         this.at.sub(f);
@@ -84,7 +84,7 @@ class Camera{
 
         f = Vector3.cross(f,this.up); //claude ai generated this line of code and explained the concept 
         f.normalize();
-        f.mul(.1);
+        f.mul(.101);
 
         this.eye.add(f); // sub instead to go backwards
         this.at.add(f);
