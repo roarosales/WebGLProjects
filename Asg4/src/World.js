@@ -513,9 +513,10 @@ function renderScene(){
   //sphere
   var round = new Sphere();
   round.color = [1, 0, 0,1];
-  if (g_normalOn){
-    round.textureNum = -3;
-  }
+  round.textureNum = 0;
+  //if (g_normalOn){
+  //  round.textureNum = -3;
+  //}
   round.matrix.scale(.75,.75,.75);
   round.matrix.translate(.5,1,-2.4);
   round.render();
