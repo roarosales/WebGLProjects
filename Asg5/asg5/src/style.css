@@ -3,6 +3,12 @@ body{
   font-family: "Montserrat", sans-serif;
   background-color: black;
 }
+description{
+  color: rgb(4, 255, 0);
+  position: absolute; /* claud help w/ this line */
+  transform: translate(27%,-240%); /* mozilla guide helped */
+
+}
 header{
   color: white;
   margin-bottom: 0px;

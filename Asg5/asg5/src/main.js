@@ -80,9 +80,13 @@ document.getElementById('lightSlide').addEventListener('mousemove', function(){ 
 
 
 let animate = false;
+let flaminate = false;
 //Animation switch
 document.getElementById('animateOn').onclick = function() { animate=true; };
 document.getElementById('animateOff').onclick = function() { animate=false; };
+
+document.getElementById('flaminateOn').onclick = function() { flaminate=true; };
+document.getElementById('flaminateOff').onclick = function() { flaminate=false; };
 
 function lightPosition(value){
   if (value==1){
@@ -123,9 +127,23 @@ function moveCylinder(value){
   }
 }
 
+function moveBall(value){
+  if(value==true){
+    ball.position.y+=.1;
+    ball.position.z+=.01;
+    ball.position.x+=.01;
+    ball.rotation.y+=Math.PI/8
+  }
+  else{
+    ball.position.set(-10,3.5,-15);
+  }
+}
+
+
 function render() {
   requestAnimationFrame(render);
   moveCylinder(animate);
+  moveBall(flaminate);
   lightPosition(lightPos);
   renderer.render( scene, camera );
 }
@@ -351,9 +369,9 @@ loader.load(
 	// called when the resource is loaded
 	function ( gltf ) {
 		scene.add(gltf.scene);
-    gltf.scene.position.set(6.36,0.1,6.5);
-    gltf.scene.rotation.y += Math.PI * 1.75;
-    gltf.scene.scale.set(1.25,1.25,1.25);
+    gltf.scene.position.set(7.6,0.1,15.5);
+    gltf.scene.rotation.y += Math.PI * .8;
+    gltf.scene.scale.set(1,1,1);
 	},
 	// called while loading is progressing
 	function ( xhr ) {
