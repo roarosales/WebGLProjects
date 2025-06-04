@@ -18,46 +18,126 @@ const renderer = new THREE.WebGLRenderer({
 //Setting up the camera positions
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize( window.innerWidth, window.innerHeight );
-camera.position.z = 30; //distance from object
+camera.position.set(25, 10, 25);
+camera.rotation.y = Math.PI * .25;
 
-//torus shape - this was from the fireship tutorial i watched
-/*
-const geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
-const material = new THREE.MeshStandardMaterial( { color: 0x00ff00} );
-const torus = new THREE.Mesh( geometry, material );
-scene.add( torus );
-*/
-
-//I learned pointlight from fireship vid
-const pointLight = new THREE.PointLight(0xffffff,100,500);
-pointLight.position.set(10,7,10)
-pointLight.scale.set(5,5,5);
-scene.add(pointLight);
-
-const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.add(ambientLight);
-
-const lightHelper = new THREE.PointLightHelper(pointLight);
-
-
-const gridHelper = new THREE.GridHelper(200,50);
-scene.add(lightHelper, gridHelper);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
-function animate() {
-  requestAnimationFrame( animate);
-  controls.update();
-  renderer.render( scene, camera );
-  
+//this was originally a pointlight I learned from fireship vid
+//Spotlight in the capybara hut
+const spotLight = new THREE.SpotLight(0xffff00,100,10);
+spotLight.position.set(15,10,10)
+spotLight.scale.set(5,5,5);
+const spotLightHelper = new THREE.PointLightHelper(spotLight); // learned how to do the helper from fireship vid
+
+
+//pointlight on ball
+const sTex = new THREE.TextureLoader().load('/src/images/Elements_02-512x512.png')
+const ball = new THREE.Mesh(
+  new THREE.SphereGeometry(3,64,64),
+  new THREE.MeshStandardMaterial({ map: sTex}) //learned about meshstandard from fireship vid
+  );
+scene.scale.set(.5,.5,.5);
+ball.position.set(-10,3.5,-15);
+scene.add(ball);
+const pointLight = new THREE.PointLight(0xffffff,100);
+pointLight.position.set(-10,3.5,-15);
+const pointLightHelper = new THREE.PointLightHelper(pointLight);
+
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+ambientLight.position.set(10,50,10)
+ambientLight.scale.set(10,10,10)
+const ambientLightHelper = new THREE.PointLightHelper(ambientLight);
+
+
+const directionLight = new THREE.DirectionalLight(0xffffff, 2);
+directionLight.position.set(-45, 20, 35);
+directionLight.scale.set(10,10,10)
+const directionLightHelper = new THREE.PointLightHelper(directionLight);
+
+
+//learned structure for this from fireship tutorial
+const geometry = new THREE.CylinderGeometry( 10, 3, 16, 100 ); //similar parameters to fireship tutorial
+const material = new THREE.MeshStandardMaterial( { color: 0x00ff00, wireframe: true} ) //learned cylinder from tutorial
+const cylinder = new THREE.Mesh( geometry, material );
+scene.add( cylinder );
+
+
+const gridHelper = new THREE.GridHelper(200,50);
+scene.add(gridHelper);
+
+//Enable or disable helpers
+document.getElementById('helperOn').onclick = function() { scene.add(spotLightHelper, ambientLightHelper,pointLightHelper, directionLightHelper); };
+document.getElementById('helperOff').onclick = function() { scene.remove(spotLightHelper, ambientLightHelper,pointLightHelper, directionLightHelper); };
+
+let lightPos=4;
+//Light switch
+///document.getElementById('lightOn').onclick = function() { scene.add(spotLight, ambientLight,pointLight); };
+//document.getElementById('lightOff').onclick = function() { scene.remove(spotLight, ambientLight,pointLight); };
+document.getElementById('lightSlide').addEventListener('mousemove', function(){ lightPos = this.value; renderScene();}); 
+
+
+let animate = false;
+//Animation switch
+document.getElementById('animateOn').onclick = function() { animate=true; };
+document.getElementById('animateOff').onclick = function() { animate=false; };
+
+function lightPosition(value){
+  if (value==1){
+    scene.add(spotLight);
+    scene.remove(pointLight);
+    scene.remove(ambientLight);
+    scene.remove(directionLight);
+  }
+  else if (value==2){
+    scene.add(spotLight);
+    scene.add(pointLight);
+    scene.remove(ambientLight);
+    scene.remove(directionLight);
+  }
+  else if (value==3){
+    scene.add(spotLight);
+    scene.add(pointLight);
+    scene.remove(ambientLight);
+    scene.add(directionLight);
+  }
+  else if (value==4){
+    scene.add(spotLight);
+    scene.add(pointLight);
+    scene.add(ambientLight);
+    scene.add(directionLight);
+  }
 }
 
+
+function moveCylinder(value){
+  if(value==true){
+    cylinder.position.y+=.1;
+    cylinder.position.z+=.01;
+    cylinder.rotation.y+=Math.PI/8
+  }
+  else{
+    cylinder.position.set(-45, 10, 35);
+  }
+}
+
+function render() {
+  requestAnimationFrame(render);
+  moveCylinder(animate);
+  lightPosition(lightPos);
+  renderer.render( scene, camera );
+}
+const wallTex = new THREE.TextureLoader().load('/src/images/Brick_10-512x512.png');
+const topWallTex = new THREE.TextureLoader().load('/src/images/Stone_08-512x512.png');
+const tileTex = new THREE.TextureLoader().load('/src/images/Tile_04-512x512.png');
+const capySign = new THREE.TextureLoader().load('/src/images/capysign.png');
+const rockTex = new THREE.TextureLoader().load('/src/images/Tileable1a.png');
+const rockTex2 = new THREE.TextureLoader().load('/src/images/Tileable1k.png');
 //my makewall is based on my previous assignments
 function makeShack(){
-  const wallTex = new THREE.TextureLoader().load('/src/images/Brick_10-512x512.png');
-  const topWallTex = new THREE.TextureLoader().load('/src/images/Stone_08-512x512.png');
-  const tileTex = new THREE.TextureLoader().load('/src/images/Tile_04-512x512.png');
-  const capySign = new THREE.TextureLoader().load('/src/images/capysign.png');
+  
   var g_map = [
   [1, 1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 0, 0, 0, 1],
@@ -129,14 +209,109 @@ function makeShack(){
   sign.scale.set( 2, .1, 1.1 );
   sign.position.set(22.4,5.2,3);
   scene.add(sign);
-
-
+  
+  renderer.render( scene, camera );
 }
 
+function makeTerrain(){
+  
+  var g_map = [
+  // Top Row
+  // Row 0: Top border of map and top wall of the first row of chambers
+  [1, 2, 3, 3, 2, 2, 2, 3,  1, 1, 2, 2, 3, 3, 2, 1,  1, 2, 2, 2, 1, 2, 3, 3,  3, 3, 2, 1, 1, 1, 1, 0],
+  // Rows 1-6: Top Left of the Border
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 0, 1, 1, 0,  2, 1, 1, 1, 1, 0, 0, 0,  1, 3, 3, 2, 2, 1, 0, 0],
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 2, 0, 0, 0, 0, 0],
+  [1, 0, 2, 0, 3, 3, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 0, 0, 1, 0, 0,  1, 2, 3, 0, 0, 0, 0, 0],
+  [1, 0, 2, 0, 2, 2, 2, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 1, 3, 1, 0, 0, 0, 0],
+  [1, 0, 1, 3, 0, 3, 3, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 1, 0, 0, 0, 0,  0, 1, 1, 2, 0, 0, 0, 0],
+  [1, 0, 0, 2, 2, 2, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  // Row 7: Solid Vertical wall in the middle
+  [1, 1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1,  0, 0, 0, 0, 0, 1, 1, 0], // ADJUSTED
 
+  // --- Second Row of Chambers (Rows 8-15) ---
+  // Row 8: Solid horizontal wall.
+  [1, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 0, 0, 0, 0, 0],
+  [1, 0, 2, 0, 0, 0, 0, 0,  0, 2, 2, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 2, 3, 1, 0, 0, 0],
+  [1, 0, 0, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1, 1, 0, 0, 0,  0, 0, 1, 3, 3, 1, 0, 0],
+  [1, 0, 0, 1, 2, 0, 0, 0,  0, 0, 2, 3, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 1, 2, 2, 1, 1, 0],
+  [1, 2, 0, 0, 1, 3, 0, 0,  0, 0, 0, 2, 0, 0, 0, 0,  0, 0, 0, 1, 3, 1, 0, 0,  0, 0, 0, 1, 2, 0, 0, 0],
+  [1, 2, 2, 0, 0, 1, 3, 0,  0, 0, 0, 0, 2, 0, 0, 0,  0, 0, 0, 0, 1, 2, 2, 0,  0, 0, 1, 1, 2, 3, 0, 0],
+  [1, 3, 3, 0, 0, 0, 1, 3,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 3, 2, 2, 0],
+  // Row 15: Solid Vertical wall in the middle0
+  [1, 3, 3, 0, 0, 0, 1, 3,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 3, 2, 2, 0], // ADJUSTED
 
-//loading in my capybara obj 
+  // --- Third Row of Chambers (Rows 16-23) ---
+  // Row 16: Solid horizontal wall.
+  [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 2, 0, 0, 0, 0, 0,  1, 3, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  2, 3, 1, 0, 0, 0, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 2, 3, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 2, 2, 2, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 2, 1, 1, 0, 0],
+  // Row 23: Solid Vertical wall in the middle
+  [0, 2, 2, 3, 3, 3, 2, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 1, 1, 0], 
 
+  // --- Fourth Row of Chambers (Rows 24-31) ---
+  // Row 24: Solid horizontal wall.
+  [0, 0, 2, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 1, 1, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 1, 2, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 1, 1, 1, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 3, 1, 2, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  1, 2, 3, 3, 3, 1, 0, 0,  1, 1, 1, 0, 0, 0, 0, 0],
+  [0, 3, 3, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 1,  2, 3, 3, 3, 2, 1, 0, 0,  2, 2, 2, 1, 0, 0, 0, 0],
+  [0, 0, 3, 3, 1, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,,  1, 2, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 2, 2, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0,  0, 1, 1, 3, 2, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 1, 1, 0, 0,  0, 0, 0, 1, 2, 0, 0, 0,  0, 0, 0, 1, 1, 1, 1, 0,  2, 0, 0, 0, 0, 0, 0, 0],
+  // Row 31: Solid Vertical wall on the edge
+  [1, 2, 2, 1, 1, 3, 3, 3,  1, 2, 2, 3, 3, 2, 1, 1,  2, 3, 3, 2, 2, 1, 1, 1,  1, 1, 1, 2, 2, 3, 3, 0],
+];
+  for(let x=0;x<32;x++){
+    for(let y=0;y<32;y++){
+      if(g_map[x][y]==1){ 
+        const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(3,3,3),
+        new THREE.MeshStandardMaterial({ map: rockTex}) //learned about meshstandard from fireship vid
+        );
+        wall.position.set(6*x-100,3,6*y-100);
+        wall.scale.set(2,2,2);
+        scene.add(wall);
+      }
+      if(g_map[x][y]==2){ 
+        const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(3,3,3),
+        new THREE.MeshStandardMaterial({ map: rockTex}) //learned about meshstandard from fireship vid
+        );
+        wall.position.set(6*x-100,3,6*y-100);
+        wall.scale.set(2,4,2);
+        scene.add(wall);
+      }
+      if(g_map[x][y]==3){ 
+        const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(3,3,3),
+        new THREE.MeshStandardMaterial({ map: rockTex2}) //learned about meshstandard from fireship vid
+        );
+        wall.position.set(6*x-100,4,6*y-100);
+        wall.scale.set(2,6,2);
+        scene.add(wall);
+      }
+    }
+  }  
+  //roof loop
+  for(let x=0;x<8;x++){
+    for(let y=0;y<8;y++){
+      const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(3,3,3),
+        new THREE.MeshStandardMaterial({ map: wallTex}) //learned about meshstandard from fireship vid
+        );
+        roof.scale.set( 1, .5, 1 );
+        roof.position.set(x*3,9.75,y*3);
+        scene.add(roof);
+      }
+    } 
+  }
+
+//loading in my capybara obj my mtl wasnt working so i just switch to glb lol
+/*
 {
   const objLoader = new OBJLoader();
   objLoader.load('src/obj/capyTopHat.obj', (capybara1) => {
@@ -146,20 +321,69 @@ function makeShack(){
     capybara1.scale.set(5,5,5);
   });
 }
+*/
+const loader = new GLTFLoader();
 
-{
-  const mtlLoader = new MTLLoader();
-  mtlLoader.load('src/obj/capyTopHat.mtl', (mtl) => {
-    mtl.preload();
-    objLoader.setMaterials(mtl);
-    objLoader.load('src/obj/capyTopHat.obj', (root) => {
-    scene.add(root);
-    root.position.set(8,0.1,7);
-    root.rotation.y += Math.PI * .22;
-    root.scale.set(5,5,5);
-    });
-  });
-}
+// I reused the GLTF loader code from the instruction guide https://threejs.org/docs/#examples/en/loaders/GLTFLoader
+loader.load(
+	// capybara from https://poly.pizza/m/66d-mKAgF17
+	'src/obj/Capybara.glb',
+	// called when the resource is loaded
+	function ( gltf ) {
+		scene.add(gltf.scene);
+    gltf.scene.position.set(6.36,0.1,6.5);
+    gltf.scene.rotation.y += Math.PI * .22;
+    gltf.scene.scale.set(1.25,1.25,1.25);
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+	},
+	// called when loading has errors
+	function ( error ) {
+		console.log( 'An error happened' );
+	}
+);
+
+loader.load(
+	// capybara from https://poly.pizza/m/66d-mKAgF17
+	'src/obj/Capybara.glb',
+	// called when the resource is loaded
+	function ( gltf ) {
+		scene.add(gltf.scene);
+    gltf.scene.position.set(6.36,0.1,6.5);
+    gltf.scene.rotation.y += Math.PI * 1.75;
+    gltf.scene.scale.set(1.25,1.25,1.25);
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+	},
+	// called when loading has errors
+	function ( error ) {
+		console.log( 'An error happened' );
+	}
+);
+
+loader.load(
+	// alpaca from https://poly.pizza/m/bCVFD48i2l
+	'src/obj/Alpaca.glb',
+	// called when the resource is loaded
+	function ( gltf ) {
+		scene.add(gltf.scene);
+    gltf.scene.position.set(60,0.1,-50);
+    gltf.scene.rotation.y -= Math.PI * .22;
+    gltf.scene.scale.set(3,3,3);
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+	},
+	// called when loading has errors
+	function ( error ) {
+		console.log( 'An error happened' );
+	}
+);
 
 
 const fTex = new THREE.TextureLoader().load('/src/images/Stone_04-512x512.png');
@@ -168,14 +392,17 @@ fTex.wrapS = THREE.RepeatWrapping; // generated by claudeai, helps with texture 
 fTex.wrapT = THREE.RepeatWrapping; // generated by claudeai, helps with texture wrapping
 const floor = new THREE.Mesh(
   new THREE.BoxGeometry(3,3,3),
-  new THREE.MeshStandardMaterial({ map: fTex}) //learned about meshstandard from fireship vid
+  new THREE.MeshStandardMaterial({ map: fTex}) //learned about meshstandard for light reflection from fireship vid
   );
 floor.scale.set( 72, .1, 72 );
 scene.add(floor);
+
+
 
 const skytexture = new THREE.TextureLoader().load('src/images/sky.jpg');
 scene.background = skytexture;
 
 makeShack();
-animate();
-renderer.setAnimationLoop( animate );
+makeTerrain();
+render();
+

@@ -2,22 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Hyrax Laboratories</title>
-    <style>
-      body { margin: 0; }
-      #info {
-        position: absolute;
-        top: 10px;
-        width: 100%;
-        text-align: center;
-        z-index: 100;
-        display:block;
-      }
-    </style>
+    <title>Capybara Shack</title>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <canvas id = "bg"></canvas>
+    <header>
+      <h1>Capybara Shack</h1>
+      <div class = "controls">
+        <header1>
+        Animate Green Cylinder
+        <button type="button" id="animateOn" >Animation On</button>
+        <button type="button" id="animateOff" >Animation Off</button>
+        Light Helper:
+        <button type="button" id="helperOn" >On</button>
+        <button type="button" id="helperOff" >Off</button>
+        Light Slider:
+        <input type="range" min="1" max="4" value="4" class="slider" id="lightSlide">
+        </header1> 
+    </div>
+    </header>
+    <main>
+      <canvas id = "bg"></canvas>
+    </main>
+
     <script type="module" src="/src/main.js"></script>
-  </body>
-  
+  </body> 
 </html>

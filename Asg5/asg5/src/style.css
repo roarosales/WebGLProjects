@@ -1,6 +1,24 @@
-canvas{
-  position: fixed;
-  top: 0;
-  left: 0;
+body{
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  background-color: black;
+}
+header{
+  color: white;
+  margin-bottom: 0px;
 
 }
+header1{
+  color: rgb(255, 0, 255);
+
+}
+button{
+  margin-top: 0px;
+  background-color: white;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  
+}
+/* I forgot how css work so this and html was done with 
+help from tutorial https://www.youtube.com/watch?v=lGokKxJ8D2c
+*/
